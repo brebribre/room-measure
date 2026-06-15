@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RoomPlan — 3D layout editor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <!-- Top bar -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">▦</span> RoomPlan
+      </div>
+      <div class="view-tabs" id="view-tabs">
+        <button class="tab active" data-view="perspective">3D view</button>
+        <button class="tab" data-view="top">Top-down</button>
+        <button class="tab" data-view="walk">Walk</button>
+      </div>
+      <div class="top-actions">
+        <button class="btn" id="btn-save" title="Save layout (stored in your browser)">Save</button>
+        <button class="btn" id="btn-load" title="Load saved layout">Load</button>
+        <button class="btn" id="btn-clear" title="Remove all furniture">Clear</button>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <!-- Left: furniture catalog -->
+      <aside class="panel catalog">
+        <h2 class="panel-title">Furniture</h2>
+        <div class="catalog-grid" id="catalog"></div>
+        <h2 class="panel-title" style="margin-top:20px">Kitchen</h2>
+        <div class="catalog-grid" id="kitchen-catalog"></div>
+        <h2 class="panel-title" style="margin-top:20px">Doors &amp; windows</h2>
+        <div class="catalog-grid" id="openings-catalog"></div>
+        <h2 class="panel-title" style="margin-top:20px">Wall fixtures</h2>
+        <div class="catalog-grid" id="fixtures-catalog"></div>
+        <h2 class="panel-title" style="margin-top:20px">Lighting</h2>
+        <div class="catalog-grid" id="lighting-catalog"></div>
+        <p class="hint">Click furniture to drop it in. Doors, windows &amp; fixtures mount to the longest wall — drag them along any wall. Ceiling lights drag across the ceiling.</p>
+      </aside>
+
+      <!-- Center: 3D canvas -->
+      <main class="stage">
+        <canvas id="scene"></canvas>
+        <div class="edge-labels" id="edge-labels"></div>
+        <div class="stage-overlay">
+          <div class="readout" id="readout">Drag to orbit · scroll to zoom</div>
+        </div>
+        <div class="floating-controls">
+          <button class="fab" id="fab-rotate" title="Rotate selected (R)"><span>⟳</span></button>
+          <button class="fab danger" id="fab-delete" title="Delete selected (Del)"><span>🗑</span></button>
+        </div>
+      </main>
+
+      <!-- Right: properties / room settings -->
+      <aside class="panel inspector">
+        <section class="inspector-block">
+          <h2 class="panel-title">Room</h2>
+          <label class="field">
+            <span>Layout</span>
+            <select id="room-shape" class="select"></select>
+          </label>
+          <label class="field">
+            <span>Width <em id="rw-val">4.2 m</em></span>
+            <input type="range" id="room-w" min="2" max="8" step="0.1" value="4.2" />
+          </label>
+          <label class="field">
+            <span>Length <em id="rl-val">3.6 m</em></span>
+            <input type="range" id="room-l" min="2" max="8" step="0.1" value="3.6" />
+          </label>
+          <label class="field">
+            <span>Wall height <em id="rh-val">2.6 m</em></span>
+            <input type="range" id="room-h" min="2.2" max="3.5" step="0.1" value="2.6" />
+          </label>
+          <div class="area-readout">Floor area <strong id="area-val">15.1 m²</strong></div>
+          <label class="field" style="margin-top:14px">
+            <span>Floor finish</span>
+            <select id="floor-finish" class="select">
+              <option value="plain">Plain</option>
+              <option value="wood">Light wood</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Wall finish</span>
+            <select id="wall-finish" class="select">
+              <option value="plain">Plain</option>
+              <option value="wood">Light wood</option>
+            </select>
+          </label>
+          <p class="hint">Switch to <strong>Top-down</strong> and drag a wall to slide it in or out — resizing that side of the room.</p>
+        </section>
+
+        <section class="inspector-block" id="selection-block">
+          <h2 class="panel-title">Selection</h2>
+          <div id="no-selection" class="empty-state">Nothing selected.<br/>Click furniture in the room.</div>
+          <div id="selection-details" hidden>
+            <div class="prop-row"><span>Item</span><strong id="sel-name">—</strong></div>
+            <label class="field" id="sel-variant-field" hidden>
+              <span id="sel-variant-label">Size preset</span>
+              <select id="sel-variant" class="select"></select>
+            </label>
+            <label class="field">
+              <span>Width <em id="sel-w-val">—</em></span>
+              <input type="range" id="sel-w" min="0.2" max="4" step="0.05" value="1" />
+            </label>
+            <label class="field">
+              <span>Depth <em id="sel-d-val">—</em></span>
+              <input type="range" id="sel-d" min="0.2" max="4" step="0.05" value="1" />
+            </label>
+            <label class="field">
+              <span>Height <em id="sel-h-val">—</em></span>
+              <input type="range" id="sel-h" min="0.1" max="2.6" step="0.05" value="1" />
+            </label>
+            <label class="field" id="sel-worktop-field" hidden>
+              <span>Worktop</span>
+              <select id="sel-worktop" class="select">
+                <option value="plain">Plain</option>
+                <option value="wood">Light wood</option>
+              </select>
+            </label>
+            <button class="btn block" id="btn-reset-size" style="margin-bottom:14px">Reset to default size</button>
+            <label class="field">
+              <span>Rotation <em id="sel-rot-val">0°</em></span>
+              <input type="range" id="sel-rot" min="0" max="345" step="15" value="0" />
+            </label>
+            <label class="field color-field">
+              <span>Color</span>
+              <span class="swatches" id="sel-swatches"></span>
+            </label>
+            <button class="btn block" id="btn-duplicate">Duplicate</button>
+          </div>
+          <div id="opening-details" hidden>
+            <div class="prop-row"><span>Type</span><strong id="op-name">—</strong></div>
+            <div class="prop-row" id="op-size-row"><span>Size (W×H)</span><strong id="op-size">—</strong></div>
+            <div class="prop-row" id="op-sill-row"><span id="op-sill-label">Sill height</span><strong id="op-sill">—</strong></div>
+            <label class="field" id="op-type-field">
+              <span>Standard size</span>
+              <select id="op-type" class="select"></select>
+            </label>
+            <p class="hint" id="op-note"></p>
+            <button class="btn block" id="btn-duplicate-op">Duplicate</button>
+          </div>
+          <div id="light-details" hidden>
+            <div class="prop-row"><span>Type</span><strong id="light-name">Ceiling light</strong></div>
+            <label class="field">
+              <span>Brightness <em id="light-int-val">—</em></span>
+              <input type="range" id="light-int" min="0" max="30" step="1" value="12" />
+            </label>
+            <label class="field color-field">
+              <span>Color</span>
+              <span class="swatches" id="light-swatches"></span>
+            </label>
+            <button class="btn block" id="btn-duplicate-light">Duplicate</button>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
