@@ -35,6 +35,9 @@ export function getOpeningSpec(type) {
   return [...DOOR_TYPES, ...WINDOW_TYPES, ...FIXTURE_TYPES].find((o) => o.type === type);
 }
 
+// How far a door leaf / cabinet door swings open, in radians.
+export const OPEN_ANGLE = Math.PI * 0.55;
+
 const mat = (color, opts = {}) =>
   new THREE.MeshStandardMaterial({ color, roughness: 0.7, metalness: 0.05, ...opts });
 
@@ -42,6 +45,19 @@ function box(w, h, d, color, x = 0, y = 0, z = 0, opts) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color, opts));
   m.position.set(x, y, z);
   return m;
+}
+
+// Group `parts` into a pivot positioned at local x = hingeX, re-anchoring each
+// part's x so the group's overall appearance is unchanged at rotation 0.
+// `openSign` records which way the group should rotate to swing the parts
+// (which sit on one side of the hinge) toward +z — "into the room".
+function makeLeafPivot(parts, hingeX) {
+  const pivot = new THREE.Group();
+  pivot.position.x = hingeX;
+  let sum = 0;
+  parts.forEach((m) => { m.position.x -= hingeX; sum += m.position.x; pivot.add(m); });
+  pivot.userData.openSign = sum >= 0 ? -1 : 1;
+  return pivot;
 }
 
 // Build a door/window as a group in local space: local +x runs along the wall,
@@ -53,28 +69,37 @@ export function createOpening(type) {
   const w = spec.w, h = spec.h, sill = spec.sill;
   const frameT = 0.06;     // frame thickness
   const depth = 0.12;      // how far it reads off the wall
+  const leaves = [];       // hinged pivots — toggled open/closed via 'E' in walk mode
 
   if (kind === 'door' && spec.glazed) {
     // Fenstertür — full-height glazed door (single leaf or French double).
     const frameC = 0xd0d2d6, glassC = 0xbcd4e6;
-    const leaves = spec.leaves || 1;
+    const leafCount = spec.leaves || 1;
     g.add(box(frameT, h, depth, frameC, -w / 2 + frameT / 2, h / 2, 0));   // jambs
     g.add(box(frameT, h, depth, frameC, w / 2 - frameT / 2, h / 2, 0));
     g.add(box(w, frameT, depth, frameC, 0, h - frameT / 2, 0));            // head
     g.add(box(w, frameT, depth, frameC, 0, frameT / 2, 0));                // threshold
     const innerW = w - frameT * 2, glassH = h - frameT * 2, cy = h / 2;
     const glassOpts = { transparent: true, opacity: 0.4, roughness: 0.1 };
-    if (leaves === 2) {
-      g.add(box(0.06, glassH, depth, frameC, 0, cy, 0));                   // centre mullion
+    const hingeX = -w / 2 + frameT;
+    if (leafCount === 2) {
+      const mullion = box(0.06, glassH, depth, frameC, 0, cy, 0);                   // centre mullion
       const paneW = (innerW - 0.06) / 2 - 0.03;
       const off = 0.03 + paneW / 2 + 0.015;
-      g.add(box(paneW, glassH - 0.02, 0.02, glassC, -off, cy, 0, glassOpts));
-      g.add(box(paneW, glassH - 0.02, 0.02, glassC, off, cy, 0, glassOpts));
-      g.add(box(0.04, 0.18, 0.06, 0x2a2a2a, -0.12, 1.05, depth / 2 + 0.02)); // handles by the mullion
-      g.add(box(0.04, 0.18, 0.06, 0x2a2a2a, 0.12, 1.05, depth / 2 + 0.02));
+      const pane1 = box(paneW, glassH - 0.02, 0.02, glassC, -off, cy, 0, glassOpts);
+      const pane2 = box(paneW, glassH - 0.02, 0.02, glassC, off, cy, 0, glassOpts);
+      const handle1 = box(0.04, 0.18, 0.06, 0x2a2a2a, -0.12, 1.05, depth / 2 + 0.02); // handles by the mullion
+      const handle2 = box(0.04, 0.18, 0.06, 0x2a2a2a, 0.12, 1.05, depth / 2 + 0.02);
+      // Both glazed leaves swing together as one panel, hinged at the left jamb.
+      const pivot = makeLeafPivot([mullion, pane1, pane2, handle1, handle2], hingeX);
+      g.add(pivot);
+      leaves.push(pivot);
     } else {
-      g.add(box(innerW - 0.02, glassH - 0.02, 0.02, glassC, 0, cy, 0, glassOpts));
-      g.add(box(0.04, 0.18, 0.06, 0x2a2a2a, w / 2 - 0.14, 1.05, depth / 2 + 0.02)); // lever handle
+      const pane = box(innerW - 0.02, glassH - 0.02, 0.02, glassC, 0, cy, 0, glassOpts);
+      const handle = box(0.04, 0.18, 0.06, 0x2a2a2a, w / 2 - 0.14, 1.05, depth / 2 + 0.02); // lever handle
+      const pivot = makeLeafPivot([pane, handle], hingeX);
+      g.add(pivot);
+      leaves.push(pivot);
     }
   } else if (kind === 'door') {
     const frameC = 0x6b5640, leafC = 0xb08a5a;
@@ -84,9 +109,11 @@ export function createOpening(type) {
     g.add(box(w, frameT, depth, frameC, 0, h - frameT / 2, 0));
     // leaf, pushed slightly into the room so it's clearly a door
     const leaf = box(w - frameT * 2, h - frameT, 0.04, leafC, 0, (h - frameT) / 2, depth / 2 + 0.02);
-    g.add(leaf);
     // handle
-    g.add(box(0.04, 0.04, 0.08, 0x2a2a2a, w / 2 - 0.18, h / 2, depth / 2 + 0.08));
+    const handle = box(0.04, 0.04, 0.08, 0x2a2a2a, w / 2 - 0.18, h / 2, depth / 2 + 0.08);
+    const pivot = makeLeafPivot([leaf, handle], -w / 2 + frameT);
+    g.add(pivot);
+    leaves.push(pivot);
   } else if (kind === 'window') {
     const frameC = 0xd8d8dc, glassC = 0xbcd4e6;
     const cy = sill + h / 2;
@@ -106,9 +133,17 @@ export function createOpening(type) {
     // Wall-mounted upper kitchen cabinet (Hängeschrank), bottom edge at `sill`.
     const bodyC = 0xd8d8dc, dep = 0.35, cy = sill + h / 2, front = dep;
     g.add(box(w, h, dep, bodyC, 0, cy, dep / 2));               // body, back at wall
-    g.add(box(0.02, h - 0.04, 0.01, 0x9aa1ab, 0, cy, front));   // centre seam (two doors)
-    g.add(box(0.04, 0.1, 0.02, 0xbfc4cc, -0.09, sill + 0.08, front)); // handles at bottom
-    g.add(box(0.04, 0.1, 0.02, 0xbfc4cc, 0.09, sill + 0.08, front));
+    // A pair of hinged doors covering the front, split with a small gap.
+    const doorT = 0.02, gap = 0.01, panelW = (w - gap) / 2;
+    const leftX = -gap / 2 - panelW / 2, rightX = gap / 2 + panelW / 2;
+    const leftDoor = box(panelW, h - 0.02, doorT, bodyC, leftX, cy, front + doorT / 2);
+    const rightDoor = box(panelW, h - 0.02, doorT, bodyC, rightX, cy, front + doorT / 2);
+    const leftHandle = box(0.03, 0.1, 0.03, 0xbfc4cc, leftX + panelW / 2 - 0.06, sill + 0.08, front + doorT + 0.02);
+    const rightHandle = box(0.03, 0.1, 0.03, 0xbfc4cc, rightX - panelW / 2 + 0.06, sill + 0.08, front + doorT + 0.02);
+    const leftPivot = makeLeafPivot([leftDoor, leftHandle], -w / 2);
+    const rightPivot = makeLeafPivot([rightDoor, rightHandle], w / 2);
+    g.add(leftPivot, rightPivot);
+    leaves.push(leftPivot, rightPivot);
   } else if (kind === 'screen') {
     // Pull-down projector screen: a roller casing at the top with the matte
     // screen hanging below it, bottom edge at `sill`.
@@ -142,6 +177,7 @@ export function createOpening(type) {
   g.userData = {
     isOpening: true, kind, type, label: spec.label, glazed: !!spec.glazed,
     w, h, sill, edgeIndex: 0, t: 0.5, color: 0,
+    leaves, isOpen: false,
   };
   g.traverse((o) => { if (o.isMesh) o.userData.isOpeningPart = true; });
   return g;

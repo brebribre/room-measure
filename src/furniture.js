@@ -22,6 +22,14 @@ export const CATALOG = [
   { type: 'sink',    label: 'Sink',    icon: '🚰', w: 1.2, d: 0.6, h: 0.9, color: 0xd8d8dc, group: 'kitchen' },
   { type: 'stove',   label: 'Stove',   icon: '🍳', w: 1.2, d: 0.6, h: 0.9, color: 0xcfcfd3, group: 'kitchen' },
   { type: 'fridge',  label: 'Fridge',  icon: '🧊', w: 0.7, d: 0.7, h: 1.8, color: 0xe6e6ea, group: 'kitchen' },
+  { type: 'dish-rack',       label: 'Dish rack',       icon: '🧺', w: 0.45, d: 0.35, h: 0.25, color: 0xb8c0c8, group: 'kitchen' },
+  { type: 'espresso-machine', label: 'Espresso machine', icon: '☕', w: 0.30, d: 0.35, h: 0.35, color: 0x3a3f48, group: 'kitchen' },
+  { type: 'microwave',       label: 'Microwave',       icon: '⏲',  w: 0.50, d: 0.35, h: 0.30, color: 0xe6e6ea, group: 'kitchen' },
+  // Bathroom
+  { type: 'toilet',       label: 'Toilet',       icon: '🚽', w: 0.40, d: 0.65, h: 0.42, color: 0xf4f4f2, group: 'bathroom' },
+  { type: 'bathtub',      label: 'Bathtub',      icon: '🛁', w: 1.70, d: 0.75, h: 0.55, color: 0xf4f4f2, group: 'bathroom' },
+  { type: 'shower',       label: 'Shower',       icon: '🚿', w: 0.90, d: 0.90, h: 2.00, color: 0xeef0f2, group: 'bathroom' },
+  { type: 'bathroom-sink', label: 'Bathroom sink', icon: '🚰', w: 0.60, d: 0.45, h: 0.85, color: 0xf4f4f2, group: 'bathroom' },
 ];
 
 export const SWATCHES = [0x6c8ebf, 0x57b894, 0xc9963f, 0xd07a52, 0xb05a7a, 0x8a7a66, 0x6a9a3a, 0xcfcfcf];
@@ -41,10 +49,10 @@ export const VARIANTS = {
 
 export function getVariant(type) { return VARIANTS[type] || null; }
 
-const mat = (color) => new THREE.MeshStandardMaterial({ color, roughness: 0.7, metalness: 0.05 });
+const mat = (color, opts = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.7, metalness: 0.05, ...opts });
 
-function box(w, h, d, color, y = 0) {
-  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color));
+function box(w, h, d, color, y = 0, opts) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color, opts));
   m.position.y = y;
   m.castShadow = true;
   m.receiveShadow = true;
@@ -190,6 +198,91 @@ const BUILDERS = {
     g.add(box(0.7, 0.02, 0.7, 0x9aa1ab, 1.12));               // freezer/fridge seam
     g.add(box(0.04, 0.5, 0.04, 0x8b9099, 1.45).translateX(-0.3).translateZ(0.36)); // upper handle
     g.add(box(0.04, 0.3, 0.04, 0x8b9099, 0.85).translateX(-0.3).translateZ(0.36)); // lower handle
+    return g;
+  },
+  'dish-rack'(c) {
+    const g = new THREE.Group();
+    const wire = 0xb8c0c8;
+    g.add(box(0.45, 0.02, 0.35, wire, 0.01));                   // base tray
+    g.add(box(0.45, 0.015, 0.015, wire, 0.02).translateZ(0.16)); // tray rim
+    g.add(box(0.45, 0.015, 0.015, wire, 0.02).translateZ(-0.16));
+    for (let i = -3; i <= 3; i++) {
+      g.add(box(0.015, 0.18, 0.015, wire, 0.1).translateX(i * 0.06)); // wire prongs
+    }
+    const plate1 = box(0.26, 0.015, 0.22, c, 0.14);
+    plate1.rotation.z = 0.35;
+    g.add(plate1);
+    const plate2 = box(0.24, 0.015, 0.2, 0xe8e8ea, 0.13);
+    plate2.rotation.z = -0.32;
+    plate2.position.x = 0.1;
+    g.add(plate2);
+    return g;
+  },
+  'espresso-machine'(c) {
+    const g = new THREE.Group();
+    g.add(box(0.3, 0.32, 0.35, c, 0.16));                       // body
+    g.add(box(0.32, 0.03, 0.37, 0x23262b, 0.325));              // top plate
+    g.add(box(0.08, 0.05, 0.08, 0x9aa1ab, 0.025));              // drip tray
+    g.add(box(0.05, 0.08, 0.05, 0x111316, 0.22).translateZ(0.16)); // portafilter spout
+    const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.03, 0.06, 16), mat(0xffffff));
+    cup.position.set(0, 0.06, 0.16);
+    cup.castShadow = true; cup.receiveShadow = true;
+    g.add(cup);
+    g.add(box(0.03, 0.16, 0.03, 0x9aa1ab, 0.21).translateX(0.12).translateZ(0.14)); // steam wand
+    return g;
+  },
+  microwave(c) {
+    const g = new THREE.Group();
+    g.add(box(0.5, 0.3, 0.35, c, 0.15));                        // body
+    g.add(box(0.32, 0.22, 0.02, 0x1d2024, 0.16).translateX(-0.06).translateZ(0.175)); // door glass
+    g.add(box(0.1, 0.26, 0.02, c, 0.15).translateX(0.18).translateZ(0.176));         // control panel
+    g.add(box(0.015, 0.18, 0.01, 0x444a55, 0.18).translateX(0.07).translateZ(0.18)); // door handle
+    return g;
+  },
+  toilet(c) {
+    const g = new THREE.Group();
+    g.add(box(0.42, 0.4, 0.16, c, 0.42).translateZ(-0.245));    // cistern
+    g.add(box(0.36, 0.36, 0.46, c, 0.18).translateZ(0.04));     // bowl/pedestal
+    const seat = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.19, 0.05, 20), mat(0xffffff));
+    seat.position.set(0, 0.385, 0.04);
+    seat.castShadow = true; seat.receiveShadow = true;
+    g.add(seat);
+    g.add(box(0.06, 0.04, 0.02, 0xbfc4cc, 0.6).translateZ(-0.32)); // flush handle
+    return g;
+  },
+  bathtub(c) {
+    const g = new THREE.Group();
+    g.add(box(1.70, 0.50, 0.75, c, 0.25));                                     // outer shell
+    g.add(box(1.52, 0.36, 0.57, 0xeaf4fb, 0.33));                              // basin recess
+    g.add(box(0.06, 0.20, 0.06, 0xc2c8cf, 0.55).translateX(0.78));            // faucet stem
+    g.add(box(0.16, 0.04, 0.04, 0xc2c8cf, 0.63).translateX(0.78));            // faucet spout
+    return g;
+  },
+  shower(c) {
+    const g = new THREE.Group();
+    const glass = { transparent: true, opacity: 0.25, roughness: 0.05 };
+    g.add(box(0.90, 0.06, 0.90, c, 0.03));                                      // tray
+    g.add(box(0.04, 0.04, 0.04, 0x6b7280, 0.06));                              // drain
+    g.add(box(0.90, 2.0, 0.02, 0xbcd4e6, 1.06, glass).translateZ(-0.44));      // back wall
+    g.add(box(0.02, 2.0, 0.90, 0xbcd4e6, 1.06, glass).translateX(-0.44));      // side wall
+    g.add(box(0.05, 2.0, 0.05, 0x9aa1ab, 1.06).translateX(-0.44).translateZ(-0.44)); // corner post
+    g.add(box(0.10, 0.05, 0.05, 0xbfc4cc, 1.95).translateX(0.4).translateZ(-0.42));  // showerhead arm
+    const head = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.03, 16), mat(0xbfc4cc));
+    head.position.set(0.4, 1.85, -0.42);
+    head.castShadow = true; head.receiveShadow = true;
+    g.add(head);
+    return g;
+  },
+  'bathroom-sink'(c) {
+    const g = new THREE.Group();
+    g.add(box(0.60, 0.75, 0.45, c, 0.375));                      // vanity cabinet
+    g.add(worktop(0.64, 0.05, 0.49, 0xffffff, 0.775));           // counter top
+    g.add(box(0.46, 0.04, 0.33, 0xe8eef2, 0.81));                // basin rim
+    g.add(box(0.05, 0.20, 0.05, 0xc2c8cf, 0.95).translateZ(-0.18)); // faucet stem
+    g.add(box(0.14, 0.04, 0.04, 0xc2c8cf, 1.03).translateZ(-0.11)); // faucet spout
+    const mirror = box(0.50, 0.60, 0.02, 0xcfd6e0, 1.55, { transparent: true, opacity: 0.55, roughness: 0.05 });
+    mirror.translateZ(-0.215);
+    g.add(mirror);                                               // mirror above
     return g;
   },
 };

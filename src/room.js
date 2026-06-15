@@ -305,8 +305,11 @@ export class Room {
     return this.footprintCorners(cx, cz, rotY, w, d).every(([x, z]) => this.contains(x, z));
   }
 
-  findPlacement(rotY, w, d, pref) {
-    if (pref && this.footprintInside(pref.x, pref.z, rotY, w, d)) return { x: pref.x, z: pref.z };
+  // `blocked(x, z, rotY, w, d)` — optional extra exclusion test (e.g. interior
+  // walls), applied on top of the room polygon containment check.
+  findPlacement(rotY, w, d, pref, blocked) {
+    const valid = (x, z) => this.footprintInside(x, z, rotY, w, d) && !(blocked && blocked(x, z, rotY, w, d));
+    if (pref && valid(pref.x, pref.z)) return { x: pref.x, z: pref.z };
     const W = this.bboxWidth, L = this.bboxLength, N = 11;
     const minX = Math.min(...this.vertices.map((p) => p[0]));
     const minZ = Math.min(...this.vertices.map((p) => p[1]));
@@ -315,7 +318,7 @@ export class Room {
     for (let i = 0; i <= N; i++) {
       for (let j = 0; j <= N; j++) {
         const x = minX + (W * i) / N, z = minZ + (L * j) / N;
-        if (!this.footprintInside(x, z, rotY, w, d)) continue;
+        if (!valid(x, z)) continue;
         const dist = (x - ox) ** 2 + (z - oz) ** 2;
         if (dist < bestDist) { bestDist = dist; best = { x, z }; }
       }

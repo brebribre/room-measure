@@ -43,6 +43,8 @@
         <div class="catalog-grid" id="catalog"></div>
         <h2 class="panel-title" style="margin-top:20px">Kitchen</h2>
         <div class="catalog-grid" id="kitchen-catalog"></div>
+        <h2 class="panel-title" style="margin-top:20px">Bathroom</h2>
+        <div class="catalog-grid" id="bathroom-catalog"></div>
         <h2 class="panel-title" style="margin-top:20px">Doors &amp; windows</h2>
         <div class="catalog-grid" id="openings-catalog"></div>
         <h2 class="panel-title" style="margin-top:20px">Wall fixtures</h2>
@@ -103,6 +105,12 @@
           <p class="hint">Switch to <strong>Top-down</strong> and drag a wall to slide it in or out — resizing that side of the room.</p>
         </section>
 
+        <section class="inspector-block">
+          <h2 class="panel-title">Interior walls</h2>
+          <button class="btn block" id="btn-add-wall">Add wall</button>
+          <p class="hint">Splits the room — e.g. to separate a bathroom from the main room. In <strong>Top-down</strong>, drag the orange end-points to resize, or drag the wall to move it. Add a door from the catalog and drag it onto the new wall to connect the two spaces.</p>
+        </section>
+
         <section class="inspector-block" id="selection-block">
           <h2 class="panel-title">Selection</h2>
           <div id="no-selection" class="empty-state">Nothing selected.<br/>Click furniture in the room.</div>
@@ -152,6 +160,19 @@
             </label>
             <p class="hint" id="op-note"></p>
             <button class="btn block" id="btn-duplicate-op">Duplicate</button>
+          </div>
+          <div id="wall-details" hidden>
+            <div class="prop-row"><span>Item</span><strong>Interior wall</strong></div>
+            <label class="field">
+              <span>Length <em id="wall-length-val">—</em></span>
+              <input type="range" id="wall-length" min="0.3" max="8" step="0.05" value="1" />
+            </label>
+            <label class="field">
+              <span>Thickness <em id="wall-thickness-val">—</em></span>
+              <input type="range" id="wall-thickness" min="0.05" max="0.3" step="0.01" value="0.1" />
+            </label>
+            <p class="hint">Drag the orange end-points (Top-down) to resize, or drag the wall to move it.</p>
+            <button class="btn block" id="btn-duplicate-wall">Duplicate</button>
           </div>
           <div id="light-details" hidden>
             <div class="prop-row"><span>Type</span><strong id="light-name">Ceiling light</strong></div>

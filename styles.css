@@ -122,6 +122,7 @@ body {
 /* Inspector */
 .inspector-block { margin-bottom: 26px; }
 .field { display: block; margin-bottom: 14px; }
+.field[hidden] { display: none; }
 .field > span { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-dim); margin-bottom: 7px; }
 .field em { font-style: normal; color: var(--text); font-weight: 500; }
 
