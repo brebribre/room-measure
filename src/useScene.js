@@ -17,7 +17,7 @@ export function useScene() {
       this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
       this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       this.renderer.shadowMap.enabled = true;
-      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      this.renderer.shadowMap.type = THREE.PCFShadowMap;
 
       this.controls = new OrbitControls(this.camera, this.canvas);
       this.controls.enableDamping = true;

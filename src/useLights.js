@@ -18,7 +18,7 @@ export function useLights() {
       const light = new THREE.PointLight(0xfff0d0, 12, 9, 2);
       light.position.y = -0.22;
       g.add(light);
-      g.userData = { isLight: true, type: 'ceiling-light', label: 'Ceiling light', intensity: 12, color: 0xfff0d0, light, shade };
+      g.userData = { isLight: true, type: 'ceiling-light', label: 'Ceiling light', intensity: 12, color: 0xfff0d0, light, shade, bulb, on: true };
       return g;
     },
 
@@ -48,6 +48,18 @@ export function useLights() {
       g.userData.light.color.setHex(hex);
       document.querySelectorAll('#light-swatches .swatch').forEach((s) =>
         s.classList.toggle('active', Number(s.dataset.hex) === hex));
+    },
+
+    // Turn a ceiling light's emission on/off without losing its brightness/color settings.
+    toggleLight() {
+      const g = this.selected;
+      if (!g || !g.userData.isLight) return;
+      const on = !g.userData.on;
+      g.userData.on = on;
+      g.userData.light.visible = on;
+      g.userData.shade.material.emissiveIntensity = on ? Math.min(1.6, 0.2 + g.userData.intensity / 12) : 0.05;
+      g.userData.bulb.material.emissiveIntensity = on ? 2 : 0.1;
+      this.updateInspector();
     },
   };
 }

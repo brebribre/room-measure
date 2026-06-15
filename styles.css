@@ -52,6 +52,7 @@ body {
 .tab:not(.active):hover { color: var(--text); }
 
 .top-actions { margin-left: auto; display: flex; gap: 8px; }
+.top-actions .layout-select { width: 160px; flex-shrink: 0; }
 
 .btn {
   border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text);
@@ -61,6 +62,39 @@ body {
 .btn:hover { background: #272c36; border-color: #4a5266; }
 .btn:active { transform: scale(0.98); }
 .btn.block { width: 100%; margin-top: 12px; justify-content: center; }
+.btn.btn-off { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.btn.btn-off:hover { background: rgba(91, 140, 255, 0.25); }
+
+/* Floor bar */
+.floorbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.floorbar-label {
+  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-faint);
+}
+.floor-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.floor-tab {
+  display: flex; align-items: center; gap: 6px;
+  border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text-dim);
+  font: inherit; font-size: 12px; padding: 6px 10px; border-radius: var(--radius-sm); cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.floor-tab:hover { color: var(--text); border-color: #4a5266; }
+.floor-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.floor-tab-remove {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 50%; font-size: 12px; line-height: 1;
+  color: inherit; opacity: 0.6;
+}
+.floor-tab-remove:hover { opacity: 1; background: rgba(255,255,255,0.18); }
+.floor-add { font-size: 12px; padding: 6px 12px; margin-left: auto; }
 
 /* Workspace */
 .workspace { display: flex; flex: 1; min-height: 0; }
@@ -154,6 +188,7 @@ input[type="range"]::-moz-range-thumb {
 .empty-state { font-size: 12px; color: var(--text-faint); line-height: 1.6; padding: 8px 0; }
 
 .prop-row { display: flex; justify-content: space-between; font-size: 13px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.prop-row[hidden] { display: none; }
 .prop-row span { color: var(--text-dim); }
 .prop-row strong { font-weight: 500; }
 

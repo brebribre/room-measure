@@ -62,11 +62,13 @@ function makeLeafPivot(parts, hingeX) {
 
 // Build a door/window as a group in local space: local +x runs along the wall,
 // +y is up (base at y=0), +z points into the room. Mounted flush to the wall line.
-export function createOpening(type) {
+// `overrides` lets w/h/sill differ from the catalog spec — used for the
+// width/height-adjustable window.
+export function createOpening(type, overrides = {}) {
   const spec = getOpeningSpec(type);
   const kind = spec.kind;
   const g = new THREE.Group();
-  const w = spec.w, h = spec.h, sill = spec.sill;
+  const w = overrides.w ?? spec.w, h = overrides.h ?? spec.h, sill = overrides.sill ?? spec.sill;
   const frameT = 0.06;     // frame thickness
   const depth = 0.12;      // how far it reads off the wall
   const leaves = [];       // hinged pivots — toggled open/closed via 'E' in walk mode
@@ -121,9 +123,6 @@ export function createOpening(type) {
     g.add(box(frameT, h, depth, frameC, w / 2 - frameT / 2, cy, 0));
     g.add(box(w, frameT, depth, frameC, 0, sill + h - frameT / 2, 0));
     g.add(box(w, frameT, depth, frameC, 0, sill + frameT / 2, 0));
-    // mullions
-    g.add(box(0.03, h, 0.02, frameC, 0, cy, depth / 2));
-    g.add(box(w, 0.03, 0.02, frameC, 0, cy, depth / 2));
     // glass
     g.add(box(w - frameT * 2, h - frameT * 2, 0.02, glassC, 0, cy, 0,
       { transparent: true, opacity: 0.45, roughness: 0.1 }));
@@ -158,13 +157,15 @@ export function createOpening(type) {
   // Sunlight raking through the glazing — windows and glazed "Fenstertür" doors.
   // A spotlight placed outside-and-above the glass throws a stretched shaft of
   // light across the floor; the frame/mullions cast the window-pane shadow into it.
+  let sun = null;
   if (kind === 'window' || (kind === 'door' && spec.glazed)) {
     const top = sill + h;
-    const sun = new THREE.SpotLight(0xfff1d4, 110, 18, 0.5, 0.45, 2);
+    sun = new THREE.SpotLight(0xfff1d4, 110, 18, 0.5, 0.45, 2);
     sun.position.set(0.8, top + 1.8, -2.6);  // sun: above and outside the glass
     sun.target.position.set(-1.1, 0, 3.2);   // streak of light across the floor inside
+    sun.visible = overrides.lightOn ?? true;
     sun.castShadow = true;
-    sun.shadow.mapSize.set(1024, 1024);
+    sun.shadow.mapSize.set(512, 512);
     sun.shadow.camera.near = 0.5;
     sun.shadow.camera.far = 20;
     sun.shadow.bias = -0.0006;
@@ -178,6 +179,7 @@ export function createOpening(type) {
     isOpening: true, kind, type, label: spec.label, glazed: !!spec.glazed,
     w, h, sill, edgeIndex: 0, t: 0.5, color: 0,
     leaves, isOpen: false,
+    sun, lightOn: overrides.lightOn ?? true,
   };
   g.traverse((o) => { if (o.isMesh) o.userData.isOpeningPart = true; });
   return g;

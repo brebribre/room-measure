@@ -9,12 +9,14 @@ export function useCatalog() {
       const furn = document.getElementById('catalog');
       const kitchen = document.getElementById('kitchen-catalog');
       const bathroom = document.getElementById('bathroom-catalog');
+      const stairs = document.getElementById('stairs-catalog');
+      const GROUP_TARGETS = { kitchen, bathroom, structure: stairs };
       CATALOG.forEach((entry) => {
         const item = document.createElement('button');
         item.className = 'cat-item';
         item.innerHTML = `<span class="cat-icon">${entry.icon}</span><span class="cat-label">${entry.label}</span>`;
         item.addEventListener('click', () => this.addFurniture(entry.type));
-        const target = entry.group === 'kitchen' ? kitchen : entry.group === 'bathroom' ? bathroom : furn;
+        const target = GROUP_TARGETS[entry.group] || furn;
         target.appendChild(item);
       });
       const make = (container, type, icon, label) => {

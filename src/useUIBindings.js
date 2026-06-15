@@ -65,9 +65,17 @@ export function useUIBindings() {
       document.getElementById('sel-variant').addEventListener('change', (e) => this.applyVariant(e.target.value));
       document.getElementById('btn-reset-size').addEventListener('click', () => this.resetSelectedSize());
       document.getElementById('light-int').addEventListener('input', (e) => this.setLightIntensity(parseInt(e.target.value, 10)));
+      document.getElementById('btn-toggle-light').addEventListener('click', () => this.toggleLight());
       document.getElementById('btn-duplicate-light').addEventListener('click', () => this.duplicateSelected());
 
       document.getElementById('op-type').addEventListener('change', (e) => this.changeOpeningType(e.target.value));
+      ['w', 'h'].forEach((dim) => {
+        document.getElementById('op-' + dim).addEventListener('input', (e) =>
+          this.resizeOpening(dim, parseFloat(e.target.value)));
+      });
+      document.getElementById('op-sill-slider').addEventListener('input', (e) =>
+        this.resizeOpening('sill', parseFloat(e.target.value)));
+      document.getElementById('btn-toggle-sun').addEventListener('click', () => this.toggleOpeningLight());
       document.getElementById('btn-duplicate').addEventListener('click', () => this.duplicateSelected());
       document.getElementById('btn-duplicate-op').addEventListener('click', () => this.duplicateSelected());
       document.getElementById('btn-duplicate-wall').addEventListener('click', () => this.duplicateSelected());
@@ -88,7 +96,10 @@ export function useUIBindings() {
       document.getElementById('fab-delete').addEventListener('click', () => this.deleteSelected());
       document.getElementById('btn-save').addEventListener('click', () => this.save());
       document.getElementById('btn-load').addEventListener('click', () => this.load());
+      document.getElementById('btn-delete-layout').addEventListener('click', () => this.deleteLayout());
+      document.getElementById('btn-share').addEventListener('click', () => this.shareLink());
       document.getElementById('btn-clear').addEventListener('click', () => this.clearAll());
+      document.getElementById('btn-add-floor').addEventListener('click', () => this.addFloor());
 
       window.addEventListener('keydown', (e) => {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;

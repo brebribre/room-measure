@@ -6,8 +6,8 @@ import { wallLength, wallNormal } from './walls.js';
 // wall, opening/closing animation, and the walk-mode "press E" interaction.
 export function useOpenings() {
   return {
-    addOpening(type, edgeIndex) {
-      const g = createOpening(type);
+    addOpening(type, edgeIndex, overrides) {
+      const g = createOpening(type, overrides);
       g.userData.edgeIndex = edgeIndex ?? this.room.longestEdge();
       g.userData.wallIndex = null;
       g.userData.t = 0.5;
@@ -16,6 +16,34 @@ export function useOpenings() {
       this.openings.push(g);
       this.select(g);
       return g;
+    },
+
+    // Rebuild the selected window, wall cabinet, or glazed "window door" at a
+    // new width/height/sill, preserving its wall mounting (room edge or
+    // interior wall, and position along it).
+    resizeOpening(dim, value) {
+      const s = this.selected;
+      if (!s || !s.userData.isOpening) return;
+      const u = s.userData;
+      const isWindow = u.kind === 'window';
+      const isCabinet = u.kind === 'cabinet';
+      const isGlazedDoor = u.kind === 'door' && u.glazed;
+      if (dim === 'w' && !(isWindow || isCabinet)) return;
+      if (dim === 'h' && !(isWindow || isCabinet || isGlazedDoor)) return;
+      if (dim === 'sill' && !isWindow) return;
+      const overrides = { w: u.w, h: u.h, sill: u.sill, lightOn: u.lightOn };
+      overrides[dim] = value;
+      const { type, edgeIndex, wallIndex, t } = u;
+      this.scene.remove(s);
+      this.openings = this.openings.filter((o) => o !== s);
+      const g = createOpening(type, overrides);
+      g.userData.edgeIndex = edgeIndex;
+      g.userData.wallIndex = wallIndex;
+      g.userData.t = t;
+      this.positionOpening(g);
+      this.scene.add(g);
+      this.openings.push(g);
+      this.select(g);
     },
 
     // Geometry of the wall an opening is mounted on — either a room edge or an
@@ -100,16 +128,25 @@ export function useOpenings() {
     changeOpeningType(type) {
       const s = this.selected;
       if (!s || !s.userData.isOpening) return;
-      const { edgeIndex, t } = s.userData;
+      const { edgeIndex, t, lightOn } = s.userData;
       this.scene.remove(s);
       this.openings = this.openings.filter((o) => o !== s);
-      const g = createOpening(type);
+      const g = createOpening(type, { lightOn });
       g.userData.edgeIndex = edgeIndex;
       g.userData.t = t;
       this.positionOpening(g);
       this.scene.add(g);
       this.openings.push(g);
       this.select(g);
+    },
+
+    // Toggle the sun shaft for a window or glazed "window door" on/off.
+    toggleOpeningLight() {
+      const g = this.selected;
+      if (!g || !g.userData.isOpening || !g.userData.sun) return;
+      g.userData.lightOn = !g.userData.lightOn;
+      g.userData.sun.visible = g.userData.lightOn;
+      this.updateInspector();
     },
   };
 }

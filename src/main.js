@@ -12,6 +12,7 @@ import { useViewMode } from './useViewMode.js';
 import { useWalkMode } from './useWalkMode.js';
 import { useCanvasInteraction } from './useCanvasInteraction.js';
 import { useEdgeLabels } from './useEdgeLabels.js';
+import { useFloors } from './useFloors.js';
 import { usePersistence } from './usePersistence.js';
 import { useUIBindings } from './useUIBindings.js';
 
@@ -49,6 +50,7 @@ class Editor {
       useWalkMode(),
       useCanvasInteraction(),
       useEdgeLabels(),
+      useFloors(),
       usePersistence(),
       useUIBindings(),
     );
@@ -63,15 +65,19 @@ class Editor {
     this.buildSwatches();
     this.buildOpeningTypeSelect();
     this.bindUI();
+    this.initLayoutStorage();
     this.bindCanvas();
-    this.updateRoomControls();
-    this.rebuildHandles();
     this.animate();
 
-    this.addFurniture('bed', { x: -0.7, z: -0.6 });
-    this.addFurniture('sofa', { x: 0.6, z: 0.8 });
-    this.addOpening('door-std');
-    this.select(null);
+    if (!this.loadSharedLayoutFromURL()) {
+      this.updateRoomControls();
+      this.rebuildHandles();
+      this.addFurniture('bed', { x: -0.7, z: -0.6 });
+      this.addFurniture('sofa', { x: 0.6, z: 0.8 });
+      this.addOpening('door-std');
+      this.select(null);
+      this.initFloors();
+    }
   }
 
   /* ---------- Loop ---------- */

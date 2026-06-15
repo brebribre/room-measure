@@ -17,10 +17,11 @@ export const CATALOG = [
   { type: 'suitcase', label: 'Suitcase', icon: '🧳',  w: 0.7, d: 0.45, h: 0.3, color: 0x3f7a8c },
   { type: 'monitor',  label: 'Monitor',  icon: '🖥',  w: 0.55, d: 0.18, h: 0.42, color: 0x23262b },
   // Kitchen
-  // Kitchen base units share a 1.2 × 0.6 m footprint so they line up in a row.
+  // Kitchen base units share a 0.6 m depth so they line up in a row; counter
+  // is a 1.2 × 0.6 m module, sink and stove are square 0.6 × 0.6 m units.
   { type: 'counter', label: 'Counter', icon: '🍽', w: 1.2, d: 0.6, h: 0.9, color: 0xd8d8dc, group: 'kitchen' },
-  { type: 'sink',    label: 'Sink',    icon: '🚰', w: 1.2, d: 0.6, h: 0.9, color: 0xd8d8dc, group: 'kitchen' },
-  { type: 'stove',   label: 'Stove',   icon: '🍳', w: 1.2, d: 0.6, h: 0.9, color: 0xcfcfd3, group: 'kitchen' },
+  { type: 'sink',    label: 'Sink',    icon: '🚰', w: 0.6, d: 0.6, h: 0.9, color: 0xd8d8dc, group: 'kitchen' },
+  { type: 'stove',   label: 'Stove',   icon: '🍳', w: 0.6, d: 0.6, h: 0.9, color: 0xcfcfd3, group: 'kitchen' },
   { type: 'fridge',  label: 'Fridge',  icon: '🧊', w: 0.7, d: 0.7, h: 1.8, color: 0xe6e6ea, group: 'kitchen' },
   { type: 'dish-rack',       label: 'Dish rack',       icon: '🧺', w: 0.45, d: 0.35, h: 0.25, color: 0xb8c0c8, group: 'kitchen' },
   { type: 'espresso-machine', label: 'Espresso machine', icon: '☕', w: 0.30, d: 0.35, h: 0.35, color: 0x3a3f48, group: 'kitchen' },
@@ -30,6 +31,12 @@ export const CATALOG = [
   { type: 'bathtub',      label: 'Bathtub',      icon: '🛁', w: 1.70, d: 0.75, h: 0.55, color: 0xf4f4f2, group: 'bathroom' },
   { type: 'shower',       label: 'Shower',       icon: '🚿', w: 0.90, d: 0.90, h: 2.00, color: 0xeef0f2, group: 'bathroom' },
   { type: 'bathroom-sink', label: 'Bathroom sink', icon: '🚰', w: 0.60, d: 0.45, h: 0.85, color: 0xf4f4f2, group: 'bathroom' },
+  // Stairs — "up" is a solid flight of steps you place like furniture (occupies
+  // floor-to-ceiling space and blocks walking through it). "Down" is the floor
+  // opening above a flight on the floor below — flush with the floor like a rug,
+  // so you walk over it.
+  { type: 'stairs-up',   label: 'Stairs (up)',   icon: '⬆', w: 1.0, d: 3.0, h: 2.6,  color: 0x9a8466, group: 'structure' },
+  { type: 'stairs-down', label: 'Stairs (down)', icon: '⬇', w: 1.0, d: 3.0, h: 0.02, color: 0x4a5266, group: 'structure' },
 ];
 
 export const SWATCHES = [0x6c8ebf, 0x57b894, 0xc9963f, 0xd07a52, 0xb05a7a, 0x8a7a66, 0x6a9a3a, 0xcfcfcf];
@@ -152,27 +159,27 @@ const BUILDERS = {
     return g;
   },
   sink(c) {
-    // Same 1.2 × 0.6 counter base, with the basin set into the worktop.
+    // Square 0.6 × 0.6 base, with the basin set into the worktop.
     const g = new THREE.Group();
-    g.add(box(1.2, 0.85, 0.6, c, 0.425));                       // cabinet
-    g.add(worktop(1.24, 0.05, 0.64, 0x3a3f48, 0.875));         // worktop
-    g.add(box(0.5, 0.06, 0.42, 0xc2c8cf, 0.9));               // stainless basin rim
-    g.add(box(0.4, 0.05, 0.32, 0x9aa1ab, 0.885));            // basin recess
+    g.add(box(0.6, 0.85, 0.6, c, 0.425));                       // cabinet
+    g.add(worktop(0.64, 0.05, 0.64, 0x3a3f48, 0.875));         // worktop
+    g.add(box(0.42, 0.06, 0.42, 0xc2c8cf, 0.9));              // stainless basin rim
+    g.add(box(0.32, 0.05, 0.32, 0x9aa1ab, 0.885));           // basin recess
     g.add(box(0.05, 0.22, 0.05, 0xc2c8cf, 1.0).translateZ(-0.2)); // faucet stem
     g.add(box(0.05, 0.05, 0.16, 0xc2c8cf, 1.1).translateZ(-0.13)); // faucet spout
-    g.add(box(0.04, 0.1, 0.04, 0xbfc4cc, 0.6).translateX(-0.45).translateZ(0.31)); // cabinet handle
+    g.add(box(0.04, 0.1, 0.04, 0xbfc4cc, 0.6).translateX(-0.2).translateZ(0.31)); // cabinet handle
     return g;
   },
   stove(c) {
-    // Same 1.2 × 0.6 counter base, with the cooktop + oven set into it.
+    // Square 0.6 × 0.6 base, with the cooktop + oven set into it.
     const g = new THREE.Group();
-    g.add(box(1.2, 0.85, 0.6, c, 0.425));                       // cabinet body
-    g.add(worktop(1.24, 0.05, 0.64, 0x3a3f48, 0.875));         // worktop
-    g.add(box(0.6, 0.04, 0.5, 0x23262b, 0.9));               // cooktop (centered)
-    [[-0.15, -0.11], [0.15, -0.11], [-0.15, 0.13], [0.15, 0.13]].forEach(([x, z]) =>
+    g.add(box(0.6, 0.85, 0.6, c, 0.425));                       // cabinet body
+    g.add(worktop(0.64, 0.05, 0.64, 0x3a3f48, 0.875));         // worktop
+    g.add(box(0.5, 0.04, 0.5, 0x23262b, 0.9));               // cooktop (centered)
+    [[-0.12, -0.12], [0.12, -0.12], [-0.12, 0.12], [0.12, 0.12]].forEach(([x, z]) =>
       g.add(box(0.16, 0.02, 0.16, 0x111316, 0.92).translateX(x).translateZ(z))); // burners
-    g.add(box(0.55, 0.42, 0.02, 0x33373d, 0.41).translateZ(0.3)); // oven door (centered)
-    g.add(box(0.45, 0.04, 0.03, 0xbfc4cc, 0.64).translateZ(0.31)); // oven handle
+    g.add(box(0.5, 0.42, 0.02, 0x33373d, 0.41).translateZ(0.3)); // oven door (centered)
+    g.add(box(0.4, 0.04, 0.03, 0xbfc4cc, 0.64).translateZ(0.31)); // oven handle
     return g;
   },
   monitor(c) {
@@ -271,6 +278,36 @@ const BUILDERS = {
     head.position.set(0.4, 1.85, -0.42);
     head.castShadow = true; head.receiveShadow = true;
     g.add(head);
+    return g;
+  },
+  'stairs-up'(c) {
+    // A flight of steps, each tread+riser drawn as one block so the
+    // ascending blocks form a staircase silhouette, plus a row of railing
+    // posts along one edge.
+    const g = new THREE.Group();
+    const steps = 12, totalW = 1.0, totalD = 3.0, totalH = 2.6;
+    const stepD = totalD / steps, stepH = totalH / steps;
+    const railColor = new THREE.Color(c).offsetHSL(0, 0, -0.2).getHex();
+    for (let i = 0; i < steps; i++) {
+      const treadTop = (i + 1) * stepH;
+      const z = -totalD / 2 + i * stepD + stepD / 2;
+      g.add(box(totalW, treadTop, stepD * 0.96, c, treadTop / 2).translateZ(z));
+      const postH = 0.45;
+      g.add(box(0.05, postH, 0.05, railColor, treadTop + postH / 2).translateZ(z + stepD * 0.4).translateX(totalW / 2 - 0.05));
+    }
+    return g;
+  },
+  'stairs-down'(c) {
+    // Flat floor opening above the flight below — a striped rectangle, flush
+    // with the floor (walkable, like a rug).
+    const g = new THREE.Group();
+    const w = 1.0, d = 3.0, steps = 10;
+    g.add(box(w, 0.02, d, c, 0.011));
+    const stepD = d / steps;
+    for (let i = 0; i < steps; i++) {
+      const shade = new THREE.Color(c).offsetHSL(0, 0, i % 2 === 0 ? 0.05 : -0.04).getHex();
+      g.add(box(w * 0.92, 0.022, stepD * 0.5, shade, 0.012).translateZ(-d / 2 + (i + 0.5) * stepD));
+    }
     return g;
   },
   'bathroom-sink'(c) {

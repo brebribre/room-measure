@@ -56,6 +56,9 @@ export function useSelection() {
         document.getElementById('light-int-val').textContent = u.intensity;
         document.querySelectorAll('#light-swatches .swatch').forEach((s) =>
           s.classList.toggle('active', Number(s.dataset.hex) === u.color));
+        const toggleLightBtn = document.getElementById('btn-toggle-light');
+        toggleLightBtn.textContent = u.on ? 'Turn light off' : 'Turn light on';
+        toggleLightBtn.classList.toggle('btn-off', !u.on);
         return;
       }
 
@@ -72,15 +75,31 @@ export function useSelection() {
       } else {
         const names = { cabinet: 'Wall cabinet', screen: 'Projector screen' };
         const hasSizes = u.kind === 'door' || u.kind === 'window';
+        const isWindow = u.kind === 'window';
+        const isGlazedDoor = u.kind === 'door' && u.glazed;
+        const showW = isWindow || u.kind === 'cabinet';
+        const showH = isWindow || u.kind === 'cabinet' || isGlazedDoor;
         document.getElementById('op-name').textContent =
           u.glazed ? 'Window door' : (names[u.kind] || (u.kind === 'door' ? 'Door' : 'Window'));
-        document.getElementById('op-size-row').hidden = false;
+        document.getElementById('op-size-row').hidden = showW || showH;
         document.getElementById('op-size').textContent =
           `${Math.round(u.w * 1000)} × ${Math.round(u.h * 1000)} mm`;
-        document.getElementById('op-sill-row').hidden = u.kind === 'door';
-        document.getElementById('op-sill-label').textContent = u.kind === 'window' ? 'Sill height' : 'Mounting height';
+        document.getElementById('op-w-field').hidden = !showW;
+        document.getElementById('op-h-field').hidden = !showH;
+        if (showW) this.setSizeSlider('op-w', u.w);
+        if (showH) this.setSizeSlider('op-h', u.h);
+        document.getElementById('op-sill-row').hidden = u.kind === 'door' || isWindow;
+        document.getElementById('op-sill-field').hidden = !isWindow;
+        document.getElementById('op-sill-label').textContent = isWindow ? 'Sill height' : 'Mounting height';
         document.getElementById('op-sill').textContent = `${Math.round(u.sill * 1000)} mm`;
+        if (isWindow) this.setSizeSlider('op-sill-slider', u.sill);
         document.getElementById('op-type-field').hidden = !hasSizes;
+        const toggleSunBtn = document.getElementById('btn-toggle-sun');
+        toggleSunBtn.hidden = !u.sun;
+        if (u.sun) {
+          toggleSunBtn.textContent = u.lightOn ? 'Turn sunlight off' : 'Turn sunlight on';
+          toggleSunBtn.classList.toggle('btn-off', !u.lightOn);
+        }
         document.getElementById('op-note').textContent =
           u.glazed ? 'Fenstertür — a full-height glazed balcony/patio door that doubles as a window.'
           : u.kind === 'door' ? 'DIN 18101 standard door sizes.'
@@ -125,7 +144,8 @@ export function useSelection() {
         return;
       }
       if (s.userData.isOpening) {
-        const copy = this.addOpening(s.userData.type, s.userData.edgeIndex);
+        const copy = this.addOpening(s.userData.type, s.userData.edgeIndex,
+          { w: s.userData.w, h: s.userData.h, sill: s.userData.sill, lightOn: s.userData.lightOn });
         copy.userData.wallIndex = s.userData.wallIndex;
         copy.userData.t = Math.min(0.92, s.userData.t + 0.12);
         this.positionOpening(copy);
