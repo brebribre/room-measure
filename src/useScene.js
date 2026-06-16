@@ -15,9 +15,16 @@ export function useScene() {
       this.camera.position.copy(this.perspectivePos);
 
       this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
-      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
       this.renderer.shadowMap.enabled = true;
       this.renderer.shadowMap.type = THREE.PCFShadowMap;
+      // Shadow maps are static: re-rendered only when occluders actually move,
+      // not every frame. `shadowDirty` counts down the frames over which the
+      // maps refresh after a change; `invalidateShadows()` re-arms it.
+      this.renderer.shadowMap.autoUpdate = false;
+      this.shadowDirty = 3;
+      const invalidate = () => { if (this.view !== 'walk') this.invalidateShadows(); };
+      ['click', 'input', 'change', 'keydown'].forEach((ev) => document.addEventListener(ev, invalidate));
 
       this.controls = new OrbitControls(this.camera, this.canvas);
       this.controls.enableDamping = true;
@@ -40,7 +47,7 @@ export function useScene() {
       const key = new THREE.DirectionalLight(0xffffff, 1.1);
       key.position.set(4, 8, 5);
       key.castShadow = true;
-      key.shadow.mapSize.set(2048, 2048);
+      key.shadow.mapSize.set(1024, 1024);
       key.shadow.camera.left = -8; key.shadow.camera.right = 8;
       key.shadow.camera.top = 8; key.shadow.camera.bottom = -8;
       key.shadow.bias = -0.0005;
@@ -58,6 +65,14 @@ export function useScene() {
       this.renderer.setSize(r.width, r.height, false);
       this.camera.aspect = r.width / r.height;
       this.camera.updateProjectionMatrix();
+    },
+
+    // Re-arm static shadow maps to refresh over the next few frames. Called on
+    // any edit (via the document interaction listeners) and while dragging or
+    // animating openings — but not while merely orbiting/walking the camera,
+    // since camera motion doesn't change where shadows fall.
+    invalidateShadows(frames = 2) {
+      this.shadowDirty = Math.max(this.shadowDirty || 0, frames);
     },
   };
 }

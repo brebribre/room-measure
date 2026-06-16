@@ -15,6 +15,7 @@ import { useEdgeLabels } from './useEdgeLabels.js';
 import { useFloors } from './useFloors.js';
 import { usePersistence } from './usePersistence.js';
 import { useUIBindings } from './useUIBindings.js';
+import { hydrateIcons } from './icons.js';
 
 class Editor {
   constructor() {
@@ -64,6 +65,7 @@ class Editor {
     this.buildCatalog();
     this.buildSwatches();
     this.buildOpeningTypeSelect();
+    hydrateIcons(); // fill chrome [data-icon] slots (brand, view tabs, toolbar, FABs)
     this.bindUI();
     this.initLayoutStorage();
     this.bindCanvas();
@@ -91,6 +93,11 @@ class Editor {
     }
     this.updateOpeningAnimations(dt);
     this.updateEdgeLabels();
+    // Refresh shadow maps only when something that casts a shadow is moving or
+    // was just edited — otherwise reuse last frame's maps (the big idle win).
+    this.renderer.shadowMap.needsUpdate =
+      this.shadowDirty > 0 || this.dragMode != null || this.animatingOpenings.size > 0;
+    if (this.shadowDirty > 0) this.shadowDirty--;
     this.renderer.render(this.scene, this.camera);
   }
 }

@@ -27,10 +27,12 @@ export function useOpenings() {
       const u = s.userData;
       const isWindow = u.kind === 'window';
       const isCabinet = u.kind === 'cabinet';
+      const isScreen = u.kind === 'screen';
       const isGlazedDoor = u.kind === 'door' && u.glazed;
       if (dim === 'w' && !(isWindow || isCabinet)) return;
       if (dim === 'h' && !(isWindow || isCabinet || isGlazedDoor)) return;
-      if (dim === 'sill' && !isWindow) return;
+      // Sill = vertical mount height; adjustable for any wall-mounted fixture.
+      if (dim === 'sill' && !(isWindow || isCabinet || isScreen)) return;
       const overrides = { w: u.w, h: u.h, sill: u.sill, lightOn: u.lightOn };
       overrides[dim] = value;
       const { type, edgeIndex, wallIndex, t } = u;

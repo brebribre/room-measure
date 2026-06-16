@@ -21,6 +21,7 @@ them, and check everything fits — all in the browser.
 - **Stairs** — **Stairs (up)** is a full flight of steps with a railing, floor-to-ceiling like a piece of furniture (drag, rotate, resize, and it blocks walking through it). **Stairs (down)** is the matching opening in the floor above the flight below — flush with the floor like a rug, so you walk straight over it. Add one of each, on the floor below and above, to connect two floors.
 - **Wall fixtures** — wall cabinet (Hängeschrank, mounted at 1.45 m) and a pull-down projector screen (mounted at 1.0 m). They mount on a wall and drag along it like doors and windows.
 - **Lighting** — drop ceiling lights (pendant fixtures that actually emit light) and drag them across the ceiling; adjust brightness and warm/neutral/cool colour per light. Windows and glazed window-doors cast a directional **sun shaft** — a stretched beam of light raking across the floor with the window-pane shadow grid projected into it, as if the sun is shining through. Lighting is most striking in Walk mode.
+- **Light on/off toggles** — every light source (ceiling lights, windows, and glazed window-doors) has a "Turn light/sunlight off" button in the inspector. Switching off removes its contribution to the scene (a ceiling light's shade and bulb dim too) without losing its brightness/colour or sill/size settings — toggle it back on to restore exactly as it was. Saved with the layout.
 - **Bed sizes** — pick Single (900×2000), Queen (1600×2000), or King (1800×2000) from the bed's size dropdown; you can still fine-tune with the sliders afterwards.
 - **Resizable furniture** — every piece has width, depth, and height sliders (in meters); resizing scales the model and updates its footprint so wall-containment still holds. One click resets to the default size.
 - **Direct manipulation** — click to select, drag across the floor, rotate (15° steps or `R` for 90°), recolor, duplicate, delete.
@@ -61,6 +62,7 @@ index.html        # layout, panels, importmap for Three.js
 styles.css        # dark editor theme
 src/
   main.js         # Editor: scene, camera, controls, interaction, persistence
+  icons.js        # Inline SVG line-icon set (no emoji, no deps) + hydrateIcons()
   room.js         # Room shell — editable polygon, floor, dollhouse walls, edge helpers, containment
   furniture.js    # Furniture catalog + procedural mesh builders
   openings.js     # Doors & windows — German DIN 18101 / Brüstungshöhe sizing + mesh builders

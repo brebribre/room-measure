@@ -1,5 +1,6 @@
 import { CATALOG, SWATCHES } from './furniture.js';
 import { DOOR_TYPES, WINDOW_TYPES } from './openings.js';
+import { icon } from './icons.js';
 
 // Builds the left-hand furniture/openings/lighting catalog and the color
 // swatch pickers, and populates the opening "standard size" dropdown.
@@ -14,28 +15,28 @@ export function useCatalog() {
       CATALOG.forEach((entry) => {
         const item = document.createElement('button');
         item.className = 'cat-item';
-        item.innerHTML = `<span class="cat-icon">${entry.icon}</span><span class="cat-label">${entry.label}</span>`;
+        item.innerHTML = `<span class="cat-icon">${icon(entry.icon)}</span><span class="cat-label">${entry.label}</span>`;
         item.addEventListener('click', () => this.addFurniture(entry.type));
         const target = GROUP_TARGETS[entry.group] || furn;
         target.appendChild(item);
       });
-      const make = (container, type, icon, label) => {
+      const make = (container, type, iconName, label) => {
         const item = document.createElement('button');
         item.className = 'cat-item';
-        item.innerHTML = `<span class="cat-icon">${icon}</span><span class="cat-label">${label}</span>`;
+        item.innerHTML = `<span class="cat-icon">${icon(iconName)}</span><span class="cat-label">${label}</span>`;
         item.addEventListener('click', () => this.addOpening(type));
         container.appendChild(item);
       };
       const oc = document.getElementById('openings-catalog');
-      [['door-std', '🚪', 'Door'], ['door-balcony', '🚪', 'Window door'], ['win-std', '🪟', 'Window']]
-        .forEach(([type, icon, label]) => make(oc, type, icon, label));
+      [['door-std', 'door', 'Door'], ['door-balcony', 'window-door', 'Window door'], ['win-std', 'window', 'Window']]
+        .forEach(([type, iconName, label]) => make(oc, type, iconName, label));
       const fc = document.getElementById('fixtures-catalog');
-      [['cabinet', '🗄', 'Wall cabinet'], ['screen', '📽', 'Projector screen']]
-        .forEach(([type, icon, label]) => make(fc, type, icon, label));
+      [['cabinet', 'cabinet', 'Wall cabinet'], ['screen', 'screen', 'Projector screen']]
+        .forEach(([type, iconName, label]) => make(fc, type, iconName, label));
       const lc = document.getElementById('lighting-catalog');
       const lamp = document.createElement('button');
       lamp.className = 'cat-item';
-      lamp.innerHTML = '<span class="cat-icon">💡</span><span class="cat-label">Ceiling light</span>';
+      lamp.innerHTML = `<span class="cat-icon">${icon('ceiling-light')}</span><span class="cat-label">Ceiling light</span>`;
       lamp.addEventListener('click', () => this.addCeilingLight());
       lc.appendChild(lamp);
 

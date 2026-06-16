@@ -4,39 +4,39 @@ import * as THREE from 'three';
 // `group` sorts items into catalog sections ('furniture' | 'kitchen').
 // `build` returns a THREE.Group centered on the floor (y=0 at the bottom).
 export const CATALOG = [
-  { type: 'bed',      label: 'Bed',      icon: '🛏',  w: 1.6, d: 2.0, h: 0.5, color: 0x6c8ebf },
-  { type: 'sofa',     label: 'Sofa',     icon: '🛋',  w: 2.0, d: 0.9, h: 0.8, color: 0x57b894 },
-  { type: 'table',    label: 'Table',    icon: '🪑',  w: 1.2, d: 0.8, h: 0.75, color: 0xc9963f },
-  { type: 'desk',     label: 'Desk',     icon: '🖥',  w: 1.4, d: 0.7, h: 0.74, color: 0xd07a52 },
-  { type: 'chair',    label: 'Chair',    icon: '🪑',  w: 0.5, d: 0.5, h: 0.9, color: 0xb0764b },
-  { type: 'wardrobe', label: 'Wardrobe', icon: '🚪',  w: 1.2, d: 0.6, h: 2.0, color: 0x8a7a66 },
-  { type: 'rug',      label: 'Rug',      icon: '▭',   w: 1.6, d: 1.1, h: 0.02, color: 0xb05a7a },
-  { type: 'plant',    label: 'Plant',    icon: '🪴',  w: 0.4, d: 0.4, h: 0.8, color: 0x6a9a3a },
-  { type: 'tv',       label: 'TV unit',  icon: '📺',  w: 1.5, d: 0.4, h: 0.5, color: 0x4a5266 },
-  { type: 'shelf',    label: 'Shelf',    icon: '📚',  w: 0.9, d: 0.35, h: 1.8, color: 0x9a8466 },
-  { type: 'suitcase', label: 'Suitcase', icon: '🧳',  w: 0.7, d: 0.45, h: 0.3, color: 0x3f7a8c },
-  { type: 'monitor',  label: 'Monitor',  icon: '🖥',  w: 0.55, d: 0.18, h: 0.42, color: 0x23262b },
+  { type: 'bed',      label: 'Bed',      icon: 'bed',      w: 1.6, d: 2.0, h: 0.5, color: 0x6c8ebf },
+  { type: 'sofa',     label: 'Sofa',     icon: 'sofa',     w: 2.0, d: 0.9, h: 0.8, color: 0x57b894 },
+  { type: 'table',    label: 'Table',    icon: 'table',    w: 1.2, d: 0.8, h: 0.75, color: 0xc9963f },
+  { type: 'desk',     label: 'Desk',     icon: 'desk',     w: 1.4, d: 0.7, h: 0.74, color: 0xd07a52 },
+  { type: 'chair',    label: 'Chair',    icon: 'chair',    w: 0.5, d: 0.5, h: 0.9, color: 0xb0764b },
+  { type: 'wardrobe', label: 'Wardrobe', icon: 'wardrobe', w: 1.2, d: 0.6, h: 2.0, color: 0x8a7a66 },
+  { type: 'rug',      label: 'Rug',      icon: 'rug',      w: 1.6, d: 1.1, h: 0.02, color: 0xb05a7a },
+  { type: 'plant',    label: 'Plant',    icon: 'plant',    w: 0.4, d: 0.4, h: 0.8, color: 0x6a9a3a },
+  { type: 'tv',       label: 'TV unit',  icon: 'tv',       w: 1.5, d: 0.4, h: 0.5, color: 0x4a5266 },
+  { type: 'shelf',    label: 'Shelf',    icon: 'shelf',    w: 0.9, d: 0.35, h: 1.8, color: 0x9a8466 },
+  { type: 'suitcase', label: 'Suitcase', icon: 'suitcase', w: 0.7, d: 0.45, h: 0.3, color: 0x3f7a8c },
+  { type: 'monitor',  label: 'Monitor',  icon: 'monitor',  w: 0.55, d: 0.18, h: 0.42, color: 0x23262b },
   // Kitchen
   // Kitchen base units share a 0.6 m depth so they line up in a row; counter
   // is a 1.2 × 0.6 m module, sink and stove are square 0.6 × 0.6 m units.
-  { type: 'counter', label: 'Counter', icon: '🍽', w: 1.2, d: 0.6, h: 0.9, color: 0xd8d8dc, group: 'kitchen' },
-  { type: 'sink',    label: 'Sink',    icon: '🚰', w: 0.6, d: 0.6, h: 0.9, color: 0xd8d8dc, group: 'kitchen' },
-  { type: 'stove',   label: 'Stove',   icon: '🍳', w: 0.6, d: 0.6, h: 0.9, color: 0xcfcfd3, group: 'kitchen' },
-  { type: 'fridge',  label: 'Fridge',  icon: '🧊', w: 0.7, d: 0.7, h: 1.8, color: 0xe6e6ea, group: 'kitchen' },
-  { type: 'dish-rack',       label: 'Dish rack',       icon: '🧺', w: 0.45, d: 0.35, h: 0.25, color: 0xb8c0c8, group: 'kitchen' },
-  { type: 'espresso-machine', label: 'Espresso machine', icon: '☕', w: 0.30, d: 0.35, h: 0.35, color: 0x3a3f48, group: 'kitchen' },
-  { type: 'microwave',       label: 'Microwave',       icon: '⏲',  w: 0.50, d: 0.35, h: 0.30, color: 0xe6e6ea, group: 'kitchen' },
+  { type: 'counter', label: 'Counter', icon: 'counter', w: 1.2, d: 0.6, h: 0.9, color: 0xd8d8dc, group: 'kitchen' },
+  { type: 'sink',    label: 'Sink',    icon: 'sink',    w: 0.6, d: 0.6, h: 0.9, color: 0xd8d8dc, group: 'kitchen' },
+  { type: 'stove',   label: 'Stove',   icon: 'stove',   w: 0.6, d: 0.6, h: 0.9, color: 0xcfcfd3, group: 'kitchen' },
+  { type: 'fridge',  label: 'Fridge',  icon: 'fridge',  w: 0.7, d: 0.7, h: 1.8, color: 0xe6e6ea, group: 'kitchen' },
+  { type: 'dish-rack',       label: 'Dish rack',       icon: 'dish-rack', w: 0.45, d: 0.35, h: 0.25, color: 0xb8c0c8, group: 'kitchen' },
+  { type: 'espresso-machine', label: 'Espresso machine', icon: 'espresso', w: 0.30, d: 0.35, h: 0.35, color: 0x3a3f48, group: 'kitchen' },
+  { type: 'microwave',       label: 'Microwave',       icon: 'microwave', w: 0.50, d: 0.35, h: 0.30, color: 0xe6e6ea, group: 'kitchen' },
   // Bathroom
-  { type: 'toilet',       label: 'Toilet',       icon: '🚽', w: 0.40, d: 0.65, h: 0.42, color: 0xf4f4f2, group: 'bathroom' },
-  { type: 'bathtub',      label: 'Bathtub',      icon: '🛁', w: 1.70, d: 0.75, h: 0.55, color: 0xf4f4f2, group: 'bathroom' },
-  { type: 'shower',       label: 'Shower',       icon: '🚿', w: 0.90, d: 0.90, h: 2.00, color: 0xeef0f2, group: 'bathroom' },
-  { type: 'bathroom-sink', label: 'Bathroom sink', icon: '🚰', w: 0.60, d: 0.45, h: 0.85, color: 0xf4f4f2, group: 'bathroom' },
+  { type: 'toilet',       label: 'Toilet',       icon: 'toilet',        w: 0.40, d: 0.65, h: 0.42, color: 0xf4f4f2, group: 'bathroom' },
+  { type: 'bathtub',      label: 'Bathtub',      icon: 'bathtub',       w: 1.70, d: 0.75, h: 0.55, color: 0xf4f4f2, group: 'bathroom' },
+  { type: 'shower',       label: 'Shower',       icon: 'shower',        w: 0.90, d: 0.90, h: 2.00, color: 0xeef0f2, group: 'bathroom' },
+  { type: 'bathroom-sink', label: 'Bathroom sink', icon: 'bathroom-sink', w: 0.60, d: 0.45, h: 0.85, color: 0xf4f4f2, group: 'bathroom' },
   // Stairs — "up" is a solid flight of steps you place like furniture (occupies
   // floor-to-ceiling space and blocks walking through it). "Down" is the floor
   // opening above a flight on the floor below — flush with the floor like a rug,
   // so you walk over it.
-  { type: 'stairs-up',   label: 'Stairs (up)',   icon: '⬆', w: 1.0, d: 3.0, h: 2.6,  color: 0x9a8466, group: 'structure' },
-  { type: 'stairs-down', label: 'Stairs (down)', icon: '⬇', w: 1.0, d: 3.0, h: 0.02, color: 0x4a5266, group: 'structure' },
+  { type: 'stairs-up',   label: 'Stairs (up)',   icon: 'stairs-up',   w: 1.0, d: 3.0, h: 2.6,  color: 0x9a8466, group: 'structure' },
+  { type: 'stairs-down', label: 'Stairs (down)', icon: 'stairs-down', w: 1.0, d: 3.0, h: 0.02, color: 0x4a5266, group: 'structure' },
 ];
 
 export const SWATCHES = [0x6c8ebf, 0x57b894, 0xc9963f, 0xd07a52, 0xb05a7a, 0x8a7a66, 0x6a9a3a, 0xcfcfcf];
@@ -62,7 +62,10 @@ function box(w, h, d, color, y = 0, opts) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color, opts));
   m.position.y = y;
   m.castShadow = true;
-  m.receiveShadow = true;
+  // Furniture casts shadows onto the floor/walls but doesn't receive them — the
+  // floor and walls are the visible shadow catchers, and skipping per-furniture
+  // shadow sampling cuts main-pass fragment cost as piece count grows.
+  m.receiveShadow = false;
   return m;
 }
 
@@ -144,9 +147,19 @@ const BUILDERS = {
     return g;
   },
   shelf(c) {
+    // Open bookshelf: an outer carcass with horizontal shelves and a centre
+    // divider, leaving a grid of open cubby holes at the front.
     const g = new THREE.Group();
-    g.add(box(0.9, 1.8, 0.35, c, 0.9));
-    for (let i = 1; i <= 4; i++) g.add(box(0.86, 0.03, 0.33, 0x2a2a2a, i * 0.36).translateZ(0.0));
+    const w = 0.9, h = 1.8, d = 0.35, t = 0.04;
+    g.add(box(t, h, d, c, h / 2).translateX(-(w / 2 - t / 2)));   // left side
+    g.add(box(t, h, d, c, h / 2).translateX(w / 2 - t / 2));      // right side
+    g.add(box(w, t, d, c, h - t / 2));                            // top
+    g.add(box(w, t, d, c, t / 2));                                // bottom
+    const innerW = w - 2 * t, innerH = h - 2 * t, rows = 4, rowH = innerH / rows;
+    for (let i = 1; i < rows; i++) {                              // horizontal shelves
+      g.add(box(innerW, t, d - t, c, t + rowH * i));
+    }
+    g.add(box(t, innerH, d - t, c, t + innerH / 2));             // centre divider → 2 columns
     return g;
   },
   counter(c) {

@@ -40,6 +40,19 @@ export function useCanvasInteraction() {
 
     floorPoint() { return this.planePoint(0); },
 
+    // World height where the cursor ray crosses the vertical plane of wall
+    // segment a→b, for dragging a window/fixture up and down the wall. Null if
+    // the ray runs parallel to that plane.
+    wallHeightAtCursor(a, b) {
+      const n = new THREE.Vector3(b[1] - a[1], 0, -(b[0] - a[0]));
+      if (n.lengthSq() < 1e-9) return null;
+      n.normalize();
+      const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(n, new THREE.Vector3(a[0], 0, a[1]));
+      this.raycaster.setFromCamera(this.pointer, this.camera);
+      const out = new THREE.Vector3();
+      return this.raycaster.ray.intersectPlane(plane, out) ? out.y : null;
+    },
+
     // Intersection of the cursor ray with a horizontal plane at height y.
     planePoint(y) {
       this.raycaster.setFromCamera(this.pointer, this.camera);
@@ -180,6 +193,17 @@ export function useCanvasInteraction() {
         if (best.kind === 'wall') { u.wallIndex = best.i; u.edgeIndex = 0; }
         else { u.wallIndex = null; u.edgeIndex = best.i; }
         u.t = projectOntoSegment(best.a, best.b, fp.x, fp.z);
+        // Wall-mounted fixtures (windows, cabinets, screens) also slide
+        // vertically: map the cursor's height on the wall to the sill so you can
+        // stack e.g. two windows one above the other. Doors stay floor-anchored.
+        if (u.kind === 'window' || u.kind === 'cabinet' || u.kind === 'screen') {
+          const y = this.wallHeightAtCursor(best.a, best.b);
+          if (y != null) {
+            const maxSill = Math.max(0, this.room.height - u.h);
+            const sill = Math.min(maxSill, Math.max(0, Math.round((y - u.h / 2) / 0.05) * 0.05));
+            if (Math.abs(sill - u.sill) >= 0.001) { this.resizeOpening('sill', sill); return; }
+          }
+        }
         this.positionOpening(this.selected);
         return;
       }
