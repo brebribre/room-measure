@@ -49,6 +49,9 @@ export function useRoomHandles() {
       lEl.value = Math.min(Math.max(l, lEl.min), lEl.max);
       document.getElementById('rw-val').textContent = w.toFixed(1) + ' m';
       document.getElementById('rl-val').textContent = l.toFixed(1) + ' m';
+      const hex = (n) => '#' + (n >>> 0).toString(16).padStart(6, '0').slice(-6);
+      document.getElementById('floor-color').value = hex(this.room.floorColor);
+      document.getElementById('wall-color').value = hex(this.room.wallColor);
     },
   };
 }

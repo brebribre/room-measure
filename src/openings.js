@@ -29,6 +29,7 @@ export const WINDOW_TYPES = [
 export const FIXTURE_TYPES = [
   { type: 'cabinet', label: 'Wall cabinet · 1200×720', kind: 'cabinet', w: 1.20, h: 0.72, sill: 1.45 },
   { type: 'screen',  label: 'Projector screen · 2000×1130', kind: 'screen', w: 2.00, h: 1.13, sill: 1.00 },
+  { type: 'wall-lamp', label: 'Wall lamp', kind: 'lamp', w: 0.60, h: 0.40, sill: 1.60, intensity: 5 },
 ];
 
 export function getOpeningSpec(type) {
@@ -69,9 +70,13 @@ export function createOpening(type, overrides = {}) {
   const kind = spec.kind;
   const g = new THREE.Group();
   const w = overrides.w ?? spec.w, h = overrides.h ?? spec.h, sill = overrides.sill ?? spec.sill;
+  const intensity = overrides.intensity ?? spec.intensity ?? 5; // lamp brightness
+  const lightColor = overrides.lightColor ?? spec.lightColor ?? 0xfff0d0; // lamp light/glow colour
+  const lightOn = overrides.lightOn ?? true;
   const frameT = 0.06;     // frame thickness
   const depth = 0.12;      // how far it reads off the wall
   const leaves = [];       // hinged pivots — toggled open/closed via 'E' in walk mode
+  let lampLight = null, lampPanel = null; // wall-lamp emitter + glowing face
 
   if (kind === 'door' && spec.glazed) {
     // Fenstertür — full-height glazed door (single leaf or French double).
@@ -152,6 +157,20 @@ export function createOpening(type, overrides = {}) {
     g.add(box(0.02, h, 0.025, 0x111316, -w / 2 + 0.01, sill + h / 2, 0.045)); // side borders
     g.add(box(0.02, h, 0.025, 0x111316, w / 2 - 0.01, sill + h / 2, 0.045));
     g.add(box(w + 0.02, 0.03, 0.03, casingC, 0, sill, 0.05));        // bottom weight bar
+  } else if (kind === 'lamp') {
+    // Wall lamp: a glowing rectangular panel mounted on the wall, emitting light
+    // into the room. Resizable in width/height and slidable up/down the wall.
+    const cy = sill + h / 2, t = 0.06;
+    const glow = Math.min(1.5, 0.2 + intensity / 9);                // soft, not blown-out
+    g.add(box(w, h, t, 0xd8d8dc, 0, cy, t / 2));                     // frame, back at wall
+    lampPanel = box(w * 0.86, h * 0.78, 0.012, 0xfff6e2, 0, cy, t + 0.004,
+      { emissive: lightColor, emissiveIntensity: lightOn ? glow : 0.05 });
+    lampPanel.userData.keepEmissive = true;                         // glow survives selection highlight
+    g.add(lampPanel);                                               // glowing face
+    lampLight = new THREE.PointLight(lightColor, intensity, 6, 2);  // wider range → softer falloff
+    lampLight.position.set(0, cy, t + 0.3);
+    lampLight.visible = lightOn;
+    g.add(lampLight);
   }
 
   // Sunlight raking through the glazing — windows and glazed "Fenstertür" doors.
@@ -163,7 +182,7 @@ export function createOpening(type, overrides = {}) {
     sun = new THREE.SpotLight(0xfff1d4, 110, 18, 0.5, 0.45, 2);
     sun.position.set(0.8, top + 1.8, -2.6);  // sun: above and outside the glass
     sun.target.position.set(-1.1, 0, 3.2);   // streak of light across the floor inside
-    sun.visible = overrides.lightOn ?? true;
+    sun.visible = lightOn;
     sun.castShadow = true;
     sun.shadow.mapSize.set(512, 512);
     sun.shadow.camera.near = 0.5;
@@ -179,7 +198,8 @@ export function createOpening(type, overrides = {}) {
     isOpening: true, kind, type, label: spec.label, glazed: !!spec.glazed,
     w, h, sill, edgeIndex: 0, t: 0.5, color: 0,
     leaves, isOpen: false,
-    sun, lightOn: overrides.lightOn ?? true,
+    sun, light: lampLight, panel: lampPanel, intensity, lightColor,
+    lightOn,
   };
   g.traverse((o) => { if (o.isMesh) o.userData.isOpeningPart = true; });
   return g;

@@ -1,4 +1,4 @@
-import { CATALOG, SWATCHES } from './furniture.js';
+import { CATALOG } from './furniture.js';
 import { DOOR_TYPES, WINDOW_TYPES } from './openings.js';
 import { icon } from './icons.js';
 
@@ -11,7 +11,8 @@ export function useCatalog() {
       const kitchen = document.getElementById('kitchen-catalog');
       const bathroom = document.getElementById('bathroom-catalog');
       const stairs = document.getElementById('stairs-catalog');
-      const GROUP_TARGETS = { kitchen, bathroom, structure: stairs };
+      const lighting = document.getElementById('lighting-catalog');
+      const GROUP_TARGETS = { kitchen, bathroom, structure: stairs, lighting };
       CATALOG.forEach((entry) => {
         const item = document.createElement('button');
         item.className = 'cat-item';
@@ -34,33 +35,26 @@ export function useCatalog() {
       [['cabinet', 'cabinet', 'Wall cabinet'], ['screen', 'screen', 'Projector screen']]
         .forEach(([type, iconName, label]) => make(fc, type, iconName, label));
       const lc = document.getElementById('lighting-catalog');
+      make(lc, 'wall-lamp', 'wall-lamp', 'Wall lamp'); // wall-mounted opening, not furniture
       const lamp = document.createElement('button');
       lamp.className = 'cat-item';
       lamp.innerHTML = `<span class="cat-icon">${icon('ceiling-light')}</span><span class="cat-label">Ceiling light</span>`;
       lamp.addEventListener('click', () => this.addCeilingLight());
       lc.appendChild(lamp);
 
-      const ls = document.getElementById('light-swatches');
-      this.LIGHT_COLORS.forEach((hex) => {
-        const s = document.createElement('span');
-        s.className = 'swatch';
-        s.style.background = '#' + hex.toString(16).padStart(6, '0');
-        s.dataset.hex = hex;
-        s.addEventListener('click', () => this.setLightColor(hex));
-        ls.appendChild(s);
-      });
-    },
-
-    buildSwatches() {
-      const el = document.getElementById('sel-swatches');
-      SWATCHES.forEach((hex) => {
-        const s = document.createElement('span');
-        s.className = 'swatch';
-        s.style.background = '#' + hex.toString(16).padStart(6, '0');
-        s.dataset.hex = hex;
-        s.addEventListener('click', () => this.recolorSelected(hex));
-        el.appendChild(s);
-      });
+      const swatchRow = (containerId, onPick) => {
+        const el = document.getElementById(containerId);
+        this.LIGHT_COLORS.forEach((hex) => {
+          const s = document.createElement('span');
+          s.className = 'swatch';
+          s.style.background = '#' + hex.toString(16).padStart(6, '0');
+          s.dataset.hex = hex;
+          s.addEventListener('click', () => onPick(hex));
+          el.appendChild(s);
+        });
+      };
+      swatchRow('light-swatches', (hex) => this.setLightColor(hex));      // ceiling light
+      swatchRow('op-light-swatches', (hex) => this.setOpeningLightColor(hex)); // wall lamp
     },
 
     buildOpeningTypeSelect() {

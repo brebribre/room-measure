@@ -25,6 +25,7 @@ const PATHS = {
   'dish-rack': '<path d="M4 16h16"/><path d="M5 16 4 12h16l-1 4"/><path d="M8.5 12V7"/><path d="M12 12V6"/><path d="M15.5 12V7"/>',
   espresso: '<path d="M5 8h11v3.5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4z"/><path d="M16 9.5h1.5a2 2 0 0 1 0 4H16"/><path d="M8 3.5v1.5"/><path d="M11.5 3.5v1.5"/>',
   microwave: '<rect x="2" y="5" width="20" height="14" rx="2"/><rect x="5" y="8" width="9" height="8" rx="1"/><path d="M17.5 9v.01"/><path d="M17.5 12v.01"/><path d="M17.5 15v.01"/>',
+  'rice-cooker': '<path d="M4 11h16v5a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M6 11a6 3 0 0 1 12 0"/><path d="M11 5h2"/><path d="M12 5v3"/><path d="M3 14h1.5"/><path d="M19.5 14H21"/>',
 
   /* ---- Bathroom ---- */
   toilet: '<rect x="8" y="3" width="8" height="3.5" rx="0.5"/><path d="M6 6.5h12v2a6 6 0 0 1-12 0z"/><path d="M9 14l-.8 6"/><path d="M15 14l.8 6"/><path d="M8 20h8"/>',
@@ -43,6 +44,8 @@ const PATHS = {
   cabinet: '<rect x="3" y="5" width="18" height="11" rx="1"/><path d="M12 5v11"/><path d="M10 12.5h1"/><path d="M13 12.5h1"/>',
   screen: '<path d="M3 4h18"/><rect x="5.5" y="4" width="13" height="11" rx="0.5"/><path d="M12 15v3"/>',
   'ceiling-light': '<path d="M12 3v2.5"/><path d="M7 6h10l2 6H5z"/><path d="M9.5 12a2.5 2.5 0 0 0 5 0"/>',
+  'desk-lamp': '<path d="M3 21h7"/><path d="M6.5 21 9 9"/><path d="M9 9l7-2"/><path d="M13.5 5.5 18 9.5l-5 1.5z"/>',
+  'wall-lamp': '<rect x="6" y="4" width="12" height="7" rx="1"/><path d="M8 14v2"/><path d="M12 14v3"/><path d="M16 14v2"/>',
 
   /* ---- Chrome ---- */
   cube: '<path d="M12 2.5 20.5 7v10L12 21.5 3.5 17V7z"/><path d="M3.7 7 12 11.7 20.3 7"/><path d="M12 11.7V21.5"/>',

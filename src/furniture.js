@@ -26,6 +26,7 @@ export const CATALOG = [
   { type: 'dish-rack',       label: 'Dish rack',       icon: 'dish-rack', w: 0.45, d: 0.35, h: 0.25, color: 0xb8c0c8, group: 'kitchen' },
   { type: 'espresso-machine', label: 'Espresso machine', icon: 'espresso', w: 0.30, d: 0.35, h: 0.35, color: 0x3a3f48, group: 'kitchen' },
   { type: 'microwave',       label: 'Microwave',       icon: 'microwave', w: 0.50, d: 0.35, h: 0.30, color: 0xe6e6ea, group: 'kitchen' },
+  { type: 'rice-cooker',     label: 'Rice cooker',     icon: 'rice-cooker', w: 0.34, d: 0.34, h: 0.30, color: 0xe6e6ea, group: 'kitchen' },
   // Bathroom
   { type: 'toilet',       label: 'Toilet',       icon: 'toilet',        w: 0.40, d: 0.65, h: 0.42, color: 0xf4f4f2, group: 'bathroom' },
   { type: 'bathtub',      label: 'Bathtub',      icon: 'bathtub',       w: 1.70, d: 0.75, h: 0.55, color: 0xf4f4f2, group: 'bathroom' },
@@ -37,6 +38,10 @@ export const CATALOG = [
   // so you walk over it.
   { type: 'stairs-up',   label: 'Stairs (up)',   icon: 'stairs-up',   w: 1.0, d: 3.0, h: 2.6,  color: 0x9a8466, group: 'structure' },
   { type: 'stairs-down', label: 'Stairs (down)', icon: 'stairs-down', w: 1.0, d: 3.0, h: 0.02, color: 0x4a5266, group: 'structure' },
+  // Lighting — the desk lamp is a furniture piece whose shade emits light.
+  // (The wall lamp is a wall-mounted opening — see openings.js — so it can slide
+  // along and up/down a wall like a window.)
+  { type: 'desk-lamp', label: 'Desk lamp', icon: 'desk-lamp', w: 0.22, d: 0.20, h: 0.40, color: 0x3a3f48, group: 'lighting' },
 ];
 
 export const SWATCHES = [0x6c8ebf, 0x57b894, 0xc9963f, 0xd07a52, 0xb05a7a, 0x8a7a66, 0x6a9a3a, 0xcfcfcf];
@@ -333,6 +338,46 @@ const BUILDERS = {
     const mirror = box(0.50, 0.60, 0.02, 0xcfd6e0, 1.55, { transparent: true, opacity: 0.55, roughness: 0.05 });
     mirror.translateZ(-0.215);
     g.add(mirror);                                               // mirror above
+    return g;
+  },
+  'rice-cooker'(c) {
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.15, 0.20, 24), mat(c));
+    body.position.y = 0.10; body.castShadow = true;
+    g.add(body);
+    const lid = new THREE.Mesh(new THREE.CylinderGeometry(0.155, 0.16, 0.06, 24), mat(0xe9e9ee));
+    lid.position.y = 0.23; lid.castShadow = true;
+    g.add(lid);
+    const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.03, 14), mat(0x2a2f3a));
+    knob.position.y = 0.275;
+    g.add(knob);
+    g.add(box(0.16, 0.07, 0.02, 0x2a2f3a, 0.10).translateZ(0.15));      // control panel
+    const led = box(0.05, 0.02, 0.012, 0x123018, 0.10, { emissive: 0x6cf0a0, emissiveIntensity: 1 });
+    led.translateZ(0.162); led.userData.keepEmissive = true;            // status light
+    g.add(led);
+    g.add(box(0.04, 0.03, 0.06, 0x2a2f3a, 0.16).translateX(0.17));      // side handles
+    g.add(box(0.04, 0.03, 0.06, 0x2a2f3a, 0.16).translateX(-0.17));
+    return g;
+  },
+  'desk-lamp'(c) {
+    const g = new THREE.Group();
+    g.add(box(0.18, 0.025, 0.18, c, 0.012));                            // base
+    g.add(box(0.03, 0.30, 0.03, c, 0.16).translateX(-0.05));           // upright
+    g.add(box(0.16, 0.03, 0.03, c, 0.30).translateX(0.02));            // arm
+    const shade = new THREE.Mesh(
+      new THREE.ConeGeometry(0.075, 0.10, 18, 1, true),
+      new THREE.MeshStandardMaterial({ color: c, emissive: 0xfff1cf, emissiveIntensity: 0.5, side: THREE.DoubleSide }));
+    shade.position.set(0.09, 0.29, 0); shade.castShadow = true;
+    shade.userData.keepEmissive = true;
+    g.add(shade);
+    const bulb = new THREE.Mesh(
+      new THREE.SphereGeometry(0.028, 12, 8),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2cc, emissiveIntensity: 2 }));
+    bulb.position.set(0.09, 0.265, 0); bulb.userData.keepEmissive = true;
+    g.add(bulb);
+    const light = new THREE.PointLight(0xfff1d0, 3, 2.6, 2);
+    light.position.set(0.09, 0.24, 0);
+    g.add(light);
     return g;
   },
 };

@@ -57,6 +57,10 @@ export class Room {
     this.vertices = LAYOUTS.rectangle.outline(4.2, 3.6);
     this.floorFinish = 'plain';
     this.wallFinish = 'plain';
+    // Surface tint multiplied over the finish. Defaults preserve the original
+    // look: neutral white for the floor, the warm off-white for plain walls.
+    this.floorColor = 0xffffff;
+    this.wallColor = 0xf1ede4;
     this.gridTexture = this.makeGridTexture();
     this.woodBase = this.makeWoodTexture();
     this.build();
@@ -124,22 +128,24 @@ export class Room {
     if (this.floorFinish === 'wood') {
       const t = this.woodBase.clone();
       t.repeat.set(1, 1); t.needsUpdate = true; // ShapeGeometry UVs in meters → 1 m tile
-      return new THREE.MeshStandardMaterial({ color: 0xffffff, map: t, roughness: 0.72 });
+      return new THREE.MeshStandardMaterial({ color: this.floorColor, map: t, roughness: 0.72 });
     }
-    return new THREE.MeshStandardMaterial({ color: 0xffffff, map: this.gridTexture, roughness: 0.92 });
+    return new THREE.MeshStandardMaterial({ color: this.floorColor, map: this.gridTexture, roughness: 0.92 });
   }
 
   wallMaterial(len, h) {
     if (this.wallFinish === 'wood') {
       const t = this.woodBase.clone();
       t.repeat.set(len, h); t.needsUpdate = true; // 1 m tile across the wall
-      return new THREE.MeshStandardMaterial({ map: t, roughness: 0.8, side: THREE.BackSide });
+      return new THREE.MeshStandardMaterial({ color: this.wallColor, map: t, roughness: 0.8, side: THREE.BackSide });
     }
-    return new THREE.MeshStandardMaterial({ color: 0xf1ede4, roughness: 1, side: THREE.BackSide });
+    return new THREE.MeshStandardMaterial({ color: this.wallColor, roughness: 1, side: THREE.BackSide });
   }
 
   setFloorFinish(f) { this.floorFinish = f; this.build(); }
   setWallFinish(f) { this.wallFinish = f; this.build(); }
+  setFloorColor(hex) { this.floorColor = hex; this.build(); }
+  setWallColor(hex) { this.wallColor = hex; this.build(); }
 
   build() {
     this.group.clear();

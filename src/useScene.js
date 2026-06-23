@@ -16,6 +16,10 @@ export function useScene() {
 
       this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
       this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+      // Filmic tone mapping rolls off bright highlights instead of clipping them
+      // to a harsh white blob, so lamps read as soft glows rather than hotspots.
+      this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      this.renderer.toneMappingExposure = 1.15;
       this.renderer.shadowMap.enabled = true;
       this.renderer.shadowMap.type = THREE.PCFShadowMap;
       // Shadow maps are static: re-rendered only when occluders actually move,

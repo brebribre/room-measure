@@ -26,7 +26,8 @@ class Editor {
     this.walls = [];
     this.handleMeshes = [];
     this.wallHandleMeshes = [];
-    this.LIGHT_COLORS = [0xfff0d0, 0xffffff, 0xdfeaff]; // warm, neutral, cool
+    // warm white, neutral, soft yellow, amber, cool
+    this.LIGHT_COLORS = [0xfff0d0, 0xffffff, 0xffe08a, 0xffc14d, 0xdfeaff];
     this.selected = null;
     this.view = 'perspective';
     this.raycaster = new THREE.Raycaster();
@@ -63,7 +64,6 @@ class Editor {
     this.wallHandleGroup = new THREE.Group();
     this.scene.add(this.wallHandleGroup);
     this.buildCatalog();
-    this.buildSwatches();
     this.buildOpeningTypeSelect();
     hydrateIcons(); // fill chrome [data-icon] slots (brand, view tabs, toolbar, FABs)
     this.bindUI();

@@ -196,7 +196,7 @@ export function useCanvasInteraction() {
         // Wall-mounted fixtures (windows, cabinets, screens) also slide
         // vertically: map the cursor's height on the wall to the sill so you can
         // stack e.g. two windows one above the other. Doors stay floor-anchored.
-        if (u.kind === 'window' || u.kind === 'cabinet' || u.kind === 'screen') {
+        if (u.kind === 'window' || u.kind === 'cabinet' || u.kind === 'screen' || u.kind === 'lamp') {
           const y = this.wallHeightAtCursor(best.a, best.b);
           if (y != null) {
             const maxSill = Math.max(0, this.room.height - u.h);

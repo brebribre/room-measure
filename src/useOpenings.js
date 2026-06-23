@@ -28,12 +28,13 @@ export function useOpenings() {
       const isWindow = u.kind === 'window';
       const isCabinet = u.kind === 'cabinet';
       const isScreen = u.kind === 'screen';
+      const isLamp = u.kind === 'lamp';
       const isGlazedDoor = u.kind === 'door' && u.glazed;
-      if (dim === 'w' && !(isWindow || isCabinet)) return;
-      if (dim === 'h' && !(isWindow || isCabinet || isGlazedDoor)) return;
+      if (dim === 'w' && !(isWindow || isCabinet || isLamp)) return;
+      if (dim === 'h' && !(isWindow || isCabinet || isGlazedDoor || isLamp)) return;
       // Sill = vertical mount height; adjustable for any wall-mounted fixture.
-      if (dim === 'sill' && !(isWindow || isCabinet || isScreen)) return;
-      const overrides = { w: u.w, h: u.h, sill: u.sill, lightOn: u.lightOn };
+      if (dim === 'sill' && !(isWindow || isCabinet || isScreen || isLamp)) return;
+      const overrides = { w: u.w, h: u.h, sill: u.sill, lightOn: u.lightOn, intensity: u.intensity, lightColor: u.lightColor };
       overrides[dim] = value;
       const { type, edgeIndex, wallIndex, t } = u;
       this.scene.remove(s);
@@ -142,13 +143,42 @@ export function useOpenings() {
       this.select(g);
     },
 
-    // Toggle the sun shaft for a window or glazed "window door" on/off.
+    // Toggle the emitter on/off — the sun shaft for a window/glazed door, or the
+    // panel light for a wall lamp (also dims the glowing face when off).
     toggleOpeningLight() {
       const g = this.selected;
-      if (!g || !g.userData.isOpening || !g.userData.sun) return;
-      g.userData.lightOn = !g.userData.lightOn;
-      g.userData.sun.visible = g.userData.lightOn;
+      if (!g || !g.userData.isOpening) return;
+      const u = g.userData;
+      const emitter = u.sun || u.light;
+      if (!emitter) return;
+      u.lightOn = !u.lightOn;
+      emitter.visible = u.lightOn;
+      if (u.panel) u.panel.material.emissiveIntensity = u.lightOn ? Math.min(1.5, 0.2 + u.intensity / 9) : 0.05;
       this.updateInspector();
+    },
+
+    // Wall-lamp brightness: drives the point light and the glowing face.
+    setOpeningBrightness(v) {
+      const g = this.selected;
+      if (!g || !g.userData.isOpening || !g.userData.light) return;
+      const u = g.userData;
+      u.intensity = v;
+      u.light.intensity = v;
+      if (u.lightOn) u.panel.material.emissiveIntensity = Math.min(1.5, 0.2 + v / 9);
+      document.getElementById('op-bright-val').textContent = +v.toFixed(1);
+    },
+
+    // Wall-lamp light colour (warm white, yellow, …) — tints both the point
+    // light and the glowing face without a rebuild.
+    setOpeningLightColor(hex) {
+      const g = this.selected;
+      if (!g || !g.userData.isOpening || !g.userData.light) return;
+      const u = g.userData;
+      u.lightColor = hex;
+      u.light.color.setHex(hex);
+      u.panel.material.emissive.setHex(hex);
+      document.querySelectorAll('#op-light-swatches .swatch').forEach((s) =>
+        s.classList.toggle('active', Number(s.dataset.hex) === hex));
     },
   };
 }

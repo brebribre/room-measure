@@ -50,6 +50,8 @@ export function useUIBindings() {
       });
       document.getElementById('floor-finish').addEventListener('change', (e) => this.room.setFloorFinish(e.target.value));
       document.getElementById('wall-finish').addEventListener('change', (e) => this.room.setWallFinish(e.target.value));
+      document.getElementById('floor-color').addEventListener('input', (e) => this.room.setFloorColor(parseInt(e.target.value.slice(1), 16)));
+      document.getElementById('wall-color').addEventListener('input', (e) => this.room.setWallColor(parseInt(e.target.value.slice(1), 16)));
 
       document.getElementById('sel-rot').addEventListener('input', (e) => {
         if (!this.selected || !this.selected.userData.isFurniture) return;
@@ -63,8 +65,9 @@ export function useUIBindings() {
           this.resizeSelected(dim, parseFloat(e.target.value)));
       });
       document.getElementById('sel-variant').addEventListener('change', (e) => this.applyVariant(e.target.value));
+      document.getElementById('sel-color').addEventListener('input', (e) => this.recolorSelected(parseInt(e.target.value.slice(1), 16)));
       document.getElementById('btn-reset-size').addEventListener('click', () => this.resetSelectedSize());
-      document.getElementById('light-int').addEventListener('input', (e) => this.setLightIntensity(parseInt(e.target.value, 10)));
+      document.getElementById('light-int').addEventListener('input', (e) => this.setLightIntensity(parseFloat(e.target.value)));
       document.getElementById('btn-toggle-light').addEventListener('click', () => this.toggleLight());
       document.getElementById('btn-duplicate-light').addEventListener('click', () => this.duplicateSelected());
 
@@ -75,6 +78,7 @@ export function useUIBindings() {
       });
       document.getElementById('op-sill-slider').addEventListener('input', (e) =>
         this.resizeOpening('sill', parseFloat(e.target.value)));
+      document.getElementById('op-bright').addEventListener('input', (e) => this.setOpeningBrightness(parseFloat(e.target.value)));
       document.getElementById('btn-toggle-sun').addEventListener('click', () => this.toggleOpeningLight());
       document.getElementById('btn-duplicate').addEventListener('click', () => this.duplicateSelected());
       document.getElementById('btn-duplicate-op').addEventListener('click', () => this.duplicateSelected());

@@ -13,7 +13,7 @@ export function useFloors() {
     // Snapshot of everything that belongs to the *current* floor.
     serializeFloor() {
       return {
-        room: { shape: this.room.shape, height: this.room.height, vertices: this.room.vertices, floorFinish: this.room.floorFinish, wallFinish: this.room.wallFinish },
+        room: { shape: this.room.shape, height: this.room.height, vertices: this.room.vertices, floorFinish: this.room.floorFinish, wallFinish: this.room.wallFinish, floorColor: this.room.floorColor, wallColor: this.room.wallColor },
         items: this.furniture.map((f) => ({
           type: f.userData.type,
           x: +f.position.x.toFixed(3), y: +f.position.y.toFixed(3), z: +f.position.z.toFixed(3),
@@ -23,7 +23,7 @@ export function useFloors() {
         openings: this.openings.map((o) => ({
           type: o.userData.type, edgeIndex: o.userData.edgeIndex, wallIndex: o.userData.wallIndex ?? null, t: +o.userData.t.toFixed(4),
           w: +o.userData.w.toFixed(3), h: +o.userData.h.toFixed(3), sill: +o.userData.sill.toFixed(3),
-          lightOn: o.userData.lightOn,
+          lightOn: o.userData.lightOn, intensity: o.userData.intensity, lightColor: o.userData.lightColor,
         })),
         lights: this.lights.map((l) => ({
           type: l.userData.type, x: +l.position.x.toFixed(3), z: +l.position.z.toFixed(3),
@@ -44,6 +44,8 @@ export function useFloors() {
       if (r.vertices) this.room.vertices = r.vertices.map((p) => [...p]);
       this.room.floorFinish = r.floorFinish || 'plain';
       this.room.wallFinish = r.wallFinish || 'plain';
+      this.room.floorColor = r.floorColor ?? 0xffffff;
+      this.room.wallColor = r.wallColor ?? 0xf1ede4;
       this.room.setHeight(r.height);
       document.getElementById('room-shape').value = LAYOUTS[this.room.shape] ? this.room.shape : 'rectangle';
       document.getElementById('floor-finish').value = this.room.floorFinish;
@@ -68,7 +70,7 @@ export function useFloors() {
       });
       (data.openings || []).forEach((op) => {
         if (!getOpeningSpec(op.type)) return; // skip types removed since the save
-        const overrides = { w: op.w, h: op.h, sill: op.sill, lightOn: op.lightOn };
+        const overrides = { w: op.w, h: op.h, sill: op.sill, lightOn: op.lightOn, intensity: op.intensity, lightColor: op.lightColor };
         const g = createOpening(op.type, overrides);
         g.userData.edgeIndex = op.edgeIndex;
         g.userData.wallIndex = op.wallIndex ?? null;

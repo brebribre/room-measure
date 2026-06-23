@@ -115,12 +115,20 @@
               <option value="wood">Light wood</option>
             </select>
           </label>
+          <label class="field color-row">
+            <span>Floor color</span>
+            <input type="color" class="color-input" id="floor-color" />
+          </label>
           <label class="field">
             <span>Wall finish</span>
             <select id="wall-finish" class="select">
               <option value="plain">Plain</option>
               <option value="wood">Light wood</option>
             </select>
+          </label>
+          <label class="field color-row">
+            <span>Wall color</span>
+            <input type="color" class="color-input" id="wall-color" />
           </label>
           <p class="hint">Switch to <strong>Top-down</strong> and drag a wall to slide it in or out — resizing that side of the room.</p>
         </section>
@@ -164,9 +172,9 @@
               <span>Rotation <em id="sel-rot-val">0°</em></span>
               <input type="range" id="sel-rot" min="0" max="345" step="15" value="0" />
             </label>
-            <label class="field color-field">
+            <label class="field color-row">
               <span>Color</span>
-              <span class="swatches" id="sel-swatches"></span>
+              <input type="color" class="color-input" id="sel-color" />
             </label>
             <button class="btn block" id="btn-duplicate">Duplicate</button>
           </div>
@@ -185,6 +193,14 @@
             <label class="field" id="op-sill-field" hidden>
               <span>Sill height <em id="op-sill-slider-val">—</em></span>
               <input type="range" id="op-sill-slider" min="0" max="2" step="0.05" value="0.9" />
+            </label>
+            <label class="field" id="op-bright-field" hidden>
+              <span>Brightness <em id="op-bright-val">—</em></span>
+              <input type="range" id="op-bright" min="0" max="20" step="0.1" value="5" />
+            </label>
+            <label class="field color-field" id="op-light-color-field" hidden>
+              <span>Light color</span>
+              <span class="swatches" id="op-light-swatches"></span>
             </label>
             <label class="field" id="op-type-field">
               <span>Standard size</span>
@@ -211,7 +227,7 @@
             <div class="prop-row"><span>Type</span><strong id="light-name">Ceiling light</strong></div>
             <label class="field">
               <span>Brightness <em id="light-int-val">—</em></span>
-              <input type="range" id="light-int" min="0" max="30" step="1" value="12" />
+              <input type="range" id="light-int" min="0" max="30" step="0.1" value="12" />
             </label>
             <label class="field color-field">
               <span>Color</span>

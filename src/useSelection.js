@@ -15,7 +15,7 @@ export function useSelection() {
     setHighlight(group, on) {
       if (group.userData.isLight) return; // lights are emissive already — don't tint them
       group.traverse((o) => {
-        if (o.isMesh && o.material) {
+        if (o.isMesh && o.material && !o.userData.keepEmissive) { // skip glowing lamp parts
           o.material.emissive = o.material.emissive ?? new THREE.Color(0x000000);
           o.material.emissive.setHex(on ? 0x33415f : 0x000000);
         }
@@ -53,7 +53,7 @@ export function useSelection() {
       if (sel.userData.isLight) {
         const u = sel.userData;
         document.getElementById('light-int').value = u.intensity;
-        document.getElementById('light-int-val').textContent = u.intensity;
+        document.getElementById('light-int-val').textContent = +u.intensity.toFixed(1);
         document.querySelectorAll('#light-swatches .swatch').forEach((s) =>
           s.classList.toggle('active', Number(s.dataset.hex) === u.color));
         const toggleLightBtn = document.getElementById('btn-toggle-light');
@@ -70,15 +70,16 @@ export function useSelection() {
         this.setSizeSlider('sel-d', u.d);
         this.setSizeSlider('sel-h', u.h);
         this.applyRotationUI();
-        document.querySelectorAll('.swatch').forEach((s) =>
-          s.classList.toggle('active', Number(s.dataset.hex) === u.color));
+        document.getElementById('sel-color').value = '#' + (u.color >>> 0).toString(16).padStart(6, '0').slice(-6);
       } else {
-        const names = { cabinet: 'Wall cabinet', screen: 'Projector screen' };
+        const names = { cabinet: 'Wall cabinet', screen: 'Projector screen', lamp: 'Wall lamp' };
         const hasSizes = u.kind === 'door' || u.kind === 'window';
         const isWindow = u.kind === 'window';
+        const isLamp = u.kind === 'lamp';
         const isGlazedDoor = u.kind === 'door' && u.glazed;
-        const showW = isWindow || u.kind === 'cabinet';
-        const showH = isWindow || u.kind === 'cabinet' || isGlazedDoor;
+        const showW = isWindow || u.kind === 'cabinet' || isLamp;
+        const showH = isWindow || u.kind === 'cabinet' || isGlazedDoor || isLamp;
+        const showSillSlider = isWindow || isLamp; // windows & lamps slide vertically
         document.getElementById('op-name').textContent =
           u.glazed ? 'Window door' : (names[u.kind] || (u.kind === 'door' ? 'Door' : 'Window'));
         document.getElementById('op-size-row').hidden = showW || showH;
@@ -88,16 +89,25 @@ export function useSelection() {
         document.getElementById('op-h-field').hidden = !showH;
         if (showW) this.setSizeSlider('op-w', u.w);
         if (showH) this.setSizeSlider('op-h', u.h);
-        document.getElementById('op-sill-row').hidden = u.kind === 'door' || isWindow;
-        document.getElementById('op-sill-field').hidden = !isWindow;
+        document.getElementById('op-sill-row').hidden = u.kind === 'door' || showSillSlider;
+        document.getElementById('op-sill-field').hidden = !showSillSlider;
         document.getElementById('op-sill-label').textContent = isWindow ? 'Sill height' : 'Mounting height';
         document.getElementById('op-sill').textContent = `${Math.round(u.sill * 1000)} mm`;
-        if (isWindow) this.setSizeSlider('op-sill-slider', u.sill);
+        if (showSillSlider) this.setSizeSlider('op-sill-slider', u.sill);
         document.getElementById('op-type-field').hidden = !hasSizes;
+        document.getElementById('op-bright-field').hidden = !isLamp;
+        document.getElementById('op-light-color-field').hidden = !isLamp;
+        if (isLamp) {
+          document.getElementById('op-bright').value = u.intensity;
+          document.getElementById('op-bright-val').textContent = +u.intensity.toFixed(1);
+          document.querySelectorAll('#op-light-swatches .swatch').forEach((s) =>
+            s.classList.toggle('active', Number(s.dataset.hex) === u.lightColor));
+        }
         const toggleSunBtn = document.getElementById('btn-toggle-sun');
-        toggleSunBtn.hidden = !u.sun;
-        if (u.sun) {
-          toggleSunBtn.textContent = u.lightOn ? 'Turn sunlight off' : 'Turn sunlight on';
+        toggleSunBtn.hidden = !(u.sun || u.light);
+        if (u.sun || u.light) {
+          const word = isLamp ? 'light' : 'sunlight';
+          toggleSunBtn.textContent = (u.lightOn ? 'Turn ' + word + ' off' : 'Turn ' + word + ' on');
           toggleSunBtn.classList.toggle('btn-off', !u.lightOn);
         }
         document.getElementById('op-note').textContent =
@@ -105,6 +115,7 @@ export function useSelection() {
           : u.kind === 'door' ? 'DIN 18101 standard door sizes.'
           : u.kind === 'window' ? 'Sill at 0.90 m — the German Brüstungshöhe (below it needs fall protection).'
           : u.kind === 'cabinet' ? 'Wall-mounted upper cabinet (Hängeschrank), bottom edge at 1.45 m.'
+          : isLamp ? 'A glowing light panel — drag it along or up/down the wall, resize it, and set its brightness.'
           : 'Pull-down projector screen mounted on the wall; drag it along any wall.';
         if (hasSizes) { this.fillOpeningTypeSelect(u.kind); this.opTypeSel.value = u.type; }
       }
@@ -145,7 +156,7 @@ export function useSelection() {
       }
       if (s.userData.isOpening) {
         const copy = this.addOpening(s.userData.type, s.userData.edgeIndex,
-          { w: s.userData.w, h: s.userData.h, sill: s.userData.sill, lightOn: s.userData.lightOn });
+          { w: s.userData.w, h: s.userData.h, sill: s.userData.sill, lightOn: s.userData.lightOn, intensity: s.userData.intensity, lightColor: s.userData.lightColor });
         copy.userData.wallIndex = s.userData.wallIndex;
         copy.userData.t = Math.min(0.92, s.userData.t + 0.12);
         this.positionOpening(copy);

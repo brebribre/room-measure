@@ -12,10 +12,10 @@ export function useLights() {
       shade.position.y = -0.15;
       g.add(shade);
       const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.05, 12, 10),
-        new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2cc, emissiveIntensity: 2 }));
+        new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2cc, emissiveIntensity: 1.3 }));
       bulb.position.y = -0.2;
       g.add(bulb);
-      const light = new THREE.PointLight(0xfff0d0, 12, 9, 2);
+      const light = new THREE.PointLight(0xfff0d0, 12, 13, 2); // wider range → softer, more natural falloff
       light.position.y = -0.22;
       g.add(light);
       g.userData = { isLight: true, type: 'ceiling-light', label: 'Ceiling light', intensity: 12, color: 0xfff0d0, light, shade, bulb, on: true };
@@ -37,8 +37,8 @@ export function useLights() {
       if (!g || !g.userData.isLight) return;
       g.userData.intensity = v;
       g.userData.light.intensity = v;
-      g.userData.shade.material.emissiveIntensity = Math.min(1.6, 0.2 + v / 12);
-      document.getElementById('light-int-val').textContent = v;
+      g.userData.shade.material.emissiveIntensity = Math.min(1.3, 0.2 + v / 16);
+      document.getElementById('light-int-val').textContent = +v.toFixed(1);
     },
 
     setLightColor(hex) {
@@ -57,8 +57,8 @@ export function useLights() {
       const on = !g.userData.on;
       g.userData.on = on;
       g.userData.light.visible = on;
-      g.userData.shade.material.emissiveIntensity = on ? Math.min(1.6, 0.2 + g.userData.intensity / 12) : 0.05;
-      g.userData.bulb.material.emissiveIntensity = on ? 2 : 0.1;
+      g.userData.shade.material.emissiveIntensity = on ? Math.min(1.3, 0.2 + g.userData.intensity / 16) : 0.05;
+      g.userData.bulb.material.emissiveIntensity = on ? 1.3 : 0.1;
       this.updateInspector();
     },
   };
