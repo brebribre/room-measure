@@ -1,84 +1,34 @@
-# RoomPlan — 3D room layout editor
+# RoomPlan
 
-An interactive 3D editor for planning how to lay out a room before you move in.
-Set your room's real dimensions, drop in furniture, drag pieces around, rotate
-them, and check everything fits — all in the browser.
+Plan a room in 3D before you move in: set its real size, drop in furniture, and check everything fits.
 
-![3D view of a furnished room](docs/preview.png)
+![RoomPlan demo: furnishing an apartment, top-down view and a walk-through](docs/demo.gif)
 
-## Features
+**Try it:** [room-measure.vercel.app](https://room-measure.vercel.app)
 
-- **Room layouts** — not every room is a rectangle. Start from rectangle, L-shaped, T-shaped, or U-shaped; walls, floor, grid, and furniture containment all follow the actual polygon. Floor area is computed from the real shape, not the bounding box.
-- **Editable walls** — a preset is only a starting point. In top-down view, grab a wall by its handle and slide it in or out to resize that side of the room; the wall stays straight and its two corners move together. Live length labels show every wall in meters, and the width/length sliders scale the whole room uniformly.
-- **Doors & windows (German standards)** — doors follow DIN 18101 nominal sizes (610/735/860/985/1110 mm wide, 1985/2110 mm tall — interior default 860×1985). Windows default to a 0.90 m sill (Brüstungshöhe), the German fall-protection threshold, and pick from Small/Standard/Large presets. There's also a **window-door (Fenstertür)** — a full-height glazed balcony/patio door that doubles as a window, in single (900×2100) and French-double (1500×2100) sizes. Drop any of them in and drag along any wall; they stay mounted as you reshape the room.
-- **Resizable windows & wall cabinets** — every window has width, height and sill-height sliders in the inspector, so you can resize it and slide it up or down the wall freely — the frame, clear glazing, sill and sun shaft all rebuild to match. Picking a preset from the size dropdown resets back to that preset's exact dimensions. Wall cabinets resize the same way (not stuck at 1200×720), and glazed window-doors (Fenstertür) get a height slider too.
-- **3D, top-down & walk views** — orbit/zoom in 3D (dollhouse walls auto-cull so you always see inside), flip to a top-down floor plan to arrange precisely, or enter **Walk** mode to explore the room first-person like a game: click to capture the mouse for looking around, WASD / arrow keys to move, with wall *and* furniture collision so you can't walk through walls or furniture (flat items like rugs are walkable). Press Esc to release the mouse.
-- **Real dimensions** — set width, length, and wall height in meters; live floor-area readout.
-- **Furniture catalog** — bed, sofa, table, desk, chair, wardrobe, rug, plant, TV unit, shelf, suitcase, monitor — each modeled to real-world proportions.
-- **Stacking** — drag a piece (e.g. a monitor onto a desk, or a suitcase onto a wardrobe) over another and it rests on top at the right height; drag it off and it drops back to the floor. Stacking heights are saved with the layout.
-- **Surface finishes** — give the floor and walls a finish from the Room panel. Currently Plain or Light wood (procedural light-oak planks); saved with the layout.
-- **Kitchen** — counter, sink, stove, and fridge, modeled with worktops, burners, basins, and handles, in a dedicated catalog section. All share a 0.6 m depth so they line up edge-to-edge in a run; the counter is a 1.2 × 0.6 m module, while the sink and stove are square 0.6 × 0.6 m units.
-- **Stairs** — **Stairs (up)** is a full flight of steps with a railing, floor-to-ceiling like a piece of furniture (drag, rotate, resize, and it blocks walking through it). **Stairs (down)** is the matching opening in the floor above the flight below — flush with the floor like a rug, so you walk straight over it. Add one of each, on the floor below and above, to connect two floors.
-- **Wall fixtures** — wall cabinet (Hängeschrank, mounted at 1.45 m) and a pull-down projector screen (mounted at 1.0 m). They mount on a wall and drag along it like doors and windows.
-- **Lighting** — drop ceiling lights (pendant fixtures that actually emit light) and drag them across the ceiling; adjust brightness and warm/neutral/cool colour per light. Windows and glazed window-doors cast a directional **sun shaft** — a stretched beam of light raking across the floor with the window-pane shadow grid projected into it, as if the sun is shining through. Lighting is most striking in Walk mode.
-- **Light on/off toggles** — every light source (ceiling lights, windows, and glazed window-doors) has a "Turn light/sunlight off" button in the inspector. Switching off removes its contribution to the scene (a ceiling light's shade and bulb dim too) without losing its brightness/colour or sill/size settings — toggle it back on to restore exactly as it was. Saved with the layout.
-- **Bed sizes** — pick Single (900×2000), Queen (1600×2000), or King (1800×2000) from the bed's size dropdown; you can still fine-tune with the sliders afterwards.
-- **Resizable furniture** — every piece has width, depth, and height sliders (in meters); resizing scales the model and updates its footprint so wall-containment still holds. One click resets to the default size.
-- **Direct manipulation** — click to select, drag across the floor, rotate (15° steps or `R` for 90°), recolor, duplicate, delete.
-- **Collision with walls** — pieces are clamped to stay inside the room as you drag or resize the room.
-- **Multiple floors** — use the floor tabs below the top bar to add as many floors as you like (**+ Add room**). Each floor has its own independent room shape/size, furniture, openings, lights, and interior walls; a new floor starts with the same footprint as the one you were on, empty and ready to furnish. Double-click a tab to rename it, or click its **×** to delete it. Switching tabs swaps which floor is live in the editor.
-- **Save / load** — save multiple named layouts, all persisted in your browser via `localStorage`. A saved layout includes every floor. Pick a layout from the dropdown to load or overwrite it, or leave it on "New layout…" to save a copy under a new name.
-- **Share via link** — **Share** encodes the current layout — all floors — into a link (copied to your clipboard) that recreates it for anyone who opens it — no account or server needed.
+## What it does
 
-## Keyboard shortcuts
+- **Any room shape.** Rectangle, L, T or U, then drag any wall in top-down view. Lengths and floor area update live.
+- **A real catalog.** Living, kitchen, bathroom, stairs, doors, windows, fixtures and lights, sized to real (German DIN) dimensions. Search finds them fast.
+- **Arrange freely.** Drag, rotate, resize, recolour and stack. Pieces stay inside the walls.
+- **Interior walls.** Split off a bathroom or bedroom and put doors and cabinets on either side.
+- **Three views.** Orbit in 3D, plan in top-down, or walk through first-person with WASD.
+- **Several rooms or floors** per layout, saved in your browser or shared as a link.
 
 | Key | Action |
 | --- | --- |
-| `R` | Rotate selected 90° |
-| `Delete` / `Backspace` | Delete selected |
-| `Cmd/Ctrl + D` | Duplicate selected |
+| `R` | Rotate 90° |
+| `Delete` | Delete |
+| `Cmd/Ctrl + D` | Duplicate |
 | `Esc` | Deselect |
-| `W A S D` / arrows | Move (Walk mode) |
-| Mouse | Look around (Walk mode, after clicking) |
+| `W A S D` | Walk (in Walk view) |
 
-## Running it
-
-There is a build step now: the app is a Vite + Vue 3 + TypeScript project.
+## Run it
 
 ```bash
 npm install
-npm run dev
-# then open http://localhost:5180
+npm run dev     # http://localhost:5180
+npm run build   # type-check and bundle to dist/
 ```
 
-`npm run build` type-checks the project and writes a production bundle to
-`dist/`.
-
-## Project structure
-
-```
-index.html                # page shell; mounts the Vue app
-src/
-  main.ts                 # creates the Vue app
-  App.vue                 # top bar, floor tabs, catalog, scene, inspector
-  store.ts                # reactive plain-data mirror of the editor state the panels render
-  styles.css              # dark editor theme
-  components/             # the panels: TopBar, FloorBar, CatalogPanel, SceneView, InspectorPanel
-    inspector/            # Room, Furniture, Opening, Wall and Light inspector sections
-  editor/
-    Editor.ts             # the Three.js editor, assembled from the mixins below
-    types.ts              # shared types for scene objects and saved layouts
-    use*.ts               # mixins: scene, selection, canvas interaction, floors, persistence, ...
-    room.ts               # Room shell — editable polygon, floor, dollhouse walls, edge helpers, containment
-    furniture.ts          # Furniture catalog + procedural mesh builders
-    openings.ts           # Doors & windows — German DIN 18101 / Brüstungshöhe sizing + mesh builders
-    walls.ts              # Interior wall builders
-    icons.ts              # Inline SVG line-icon set (no emoji, no deps)
-```
-
-## Built with
-
-[Three.js](https://threejs.org/) (WebGL) — `OrbitControls` for camera, raycasting
-for selection and floor-plane dragging. [Vue 3](https://vuejs.org/) for the panels,
-[Vite](https://vite.dev/) for the dev server and build, and
-[TypeScript](https://www.typescriptlang.org/) throughout.
+Built with Three.js, Vue 3, Vite and TypeScript. The 3D editor lives in `src/editor/`, the panels in `src/components/`.
