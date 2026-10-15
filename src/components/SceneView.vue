@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { Editor } from '../editor/Editor';
 import { editorRef, getEditor, store } from '../store';
 import Icon from './Icon.vue';
+import SelectionCard from './SelectionCard.vue';
 
 // Center: the 3D canvas. This component owns the canvas and the edge-label
 // overlay, and the editor's lifecycle with them: the editor is created once
@@ -60,5 +61,6 @@ onBeforeUnmount(() => {
         <Icon name="trash" :size="19" />
       </button>
     </div>
+    <SelectionCard />
   </main>
 </template>
