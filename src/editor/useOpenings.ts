@@ -1,0 +1,188 @@
+import * as THREE from 'three';
+import { createOpening, OPEN_ANGLE } from './openings';
+import { wallLength, wallNormal } from './walls';
+import { isOpeningGroup } from './types';
+import type { OpeningGroup, OpeningOverrides } from './types';
+import type { Editor, OpeningsMixin } from './Editor';
+
+// Doors, windows and wall fixtures: placement on a room edge or interior
+// wall, opening/closing animation, and the walk-mode "press E" interaction.
+export function useOpenings(): OpeningsMixin & ThisType<Editor> {
+  return {
+    addOpening(type, edgeIndex, overrides) {
+      const g = createOpening(type, overrides);
+      g.userData.edgeIndex = edgeIndex ?? this.room.longestEdge();
+      g.userData.wallIndex = null;
+      g.userData.t = 0.5;
+      this.positionOpening(g);
+      this.scene.add(g);
+      this.openings.push(g);
+      this.select(g);
+      return g;
+    },
+
+    // Rebuild the selected window, wall cabinet, or glazed "window door" at a
+    // new width/height/sill, preserving its wall mounting (room edge or
+    // interior wall, and position along it).
+    resizeOpening(dim, value) {
+      const s = this.selected;
+      if (!s || !isOpeningGroup(s)) return;
+      const u = s.userData;
+      const isWindow = u.kind === 'window';
+      const isCabinet = u.kind === 'cabinet';
+      const isScreen = u.kind === 'screen';
+      const isLamp = u.kind === 'lamp';
+      const isGlazedDoor = u.kind === 'door' && u.glazed;
+      if (dim === 'w' && !(isWindow || isCabinet || isLamp)) return;
+      if (dim === 'h' && !(isWindow || isCabinet || isGlazedDoor || isLamp)) return;
+      // Sill = vertical mount height; adjustable for any wall-mounted fixture.
+      if (dim === 'sill' && !(isWindow || isCabinet || isScreen || isLamp)) return;
+      const overrides: OpeningOverrides = { w: u.w, h: u.h, sill: u.sill, lightOn: u.lightOn, intensity: u.intensity, lightColor: u.lightColor };
+      overrides[dim] = value;
+      const { type, edgeIndex, wallIndex, t } = u;
+      this.scene.remove(s);
+      this.openings = this.openings.filter((o) => o !== s);
+      const g = createOpening(type, overrides);
+      g.userData.edgeIndex = edgeIndex;
+      g.userData.wallIndex = wallIndex;
+      g.userData.t = t;
+      this.positionOpening(g);
+      this.scene.add(g);
+      this.openings.push(g);
+      this.select(g);
+    },
+
+    // Geometry of the wall an opening is mounted on — either a room edge or an
+    // interior partition wall. Returns endpoints `a`/`b`, `len` and a unit
+    // `normal` the opening should face.
+    openingWallGeometry(u) {
+      if (u.wallIndex != null) {
+        const wall = this.walls[u.wallIndex];
+        if (wall) return { a: wall.userData.a, b: wall.userData.b, len: wallLength(wall), normal: wallNormal(wall) };
+        u.wallIndex = null;
+      }
+      if (u.edgeIndex >= this.room.vertices.length) u.edgeIndex = this.room.longestEdge();
+      const i = u.edgeIndex;
+      return { a: this.room.edgeA(i), b: this.room.edgeB(i), len: this.room.edgeLength(i), normal: this.room.edgeInwardNormal(i) };
+    },
+
+    // Place an opening on its wall (room edge or interior wall), centered at
+    // fraction t, facing the wall's normal.
+    positionOpening(g) {
+      const u = g.userData;
+      const { a, b, len, normal } = this.openingWallGeometry(u);
+      const half = (u.w / 2) / (len || 1);
+      u.t = len > u.w ? Math.max(half, Math.min(1 - half, u.t)) : 0.5;
+      const p = { x: a[0] + (b[0] - a[0]) * u.t, z: a[1] + (b[1] - a[1]) * u.t };
+      g.position.set(p.x + normal.x * 0.02, 0, p.z + normal.z * 0.02);
+      g.rotation.y = Math.atan2(normal.x, normal.z);
+      this.refreshWallOpenings();
+    },
+
+    refreshOpenings() { this.openings.forEach((g) => this.positionOpening(g)); },
+
+    // Toggle a door/cabinet's leaves open or closed, animating the swing.
+    toggleOpening(g) {
+      const u = g.userData;
+      if (!u.leaves || !u.leaves.length) return false;
+      u.isOpen = !u.isOpen;
+      u.leaves.forEach((p) => { p.userData.target = u.isOpen ? OPEN_ANGLE * p.userData.openSign : 0; });
+      this.animatingOpenings.add(g);
+      return true;
+    },
+
+    updateOpeningAnimations(dt) {
+      for (const g of this.animatingOpenings) {
+        let done = true;
+        g.userData.leaves.forEach((p) => {
+          const target: number = p.userData.target ?? 0;
+          const diff = target - p.rotation.y;
+          if (Math.abs(diff) < 0.01) p.rotation.y = target;
+          else { p.rotation.y += diff * Math.min(1, dt * 8); done = false; }
+        });
+        if (done) this.animatingOpenings.delete(g);
+      }
+    },
+
+    // Open/close the nearest door or cabinet in front of the walking camera ('E').
+    interactNearestOpening() {
+      const cam = this.camera.position;
+      const dir = new THREE.Vector3();
+      this.camera.getWorldDirection(dir);
+      dir.y = 0;
+      if (dir.lengthSq() < 1e-6) return;
+      dir.normalize();
+      const REACH = 1.6, FOV_COS = Math.cos(THREE.MathUtils.degToRad(70));
+      let best: OpeningGroup | null = null, bestDist = Infinity;
+      for (const g of this.openings) {
+        if (!g.userData.leaves || !g.userData.leaves.length) continue;
+        const dx = g.position.x - cam.x, dz = g.position.z - cam.z;
+        const dist = Math.hypot(dx, dz);
+        if (dist > REACH) continue;
+        if (dist > 0.001) {
+          const facing = (dx / dist) * dir.x + (dz / dist) * dir.z;
+          if (facing < FOV_COS) continue;
+        }
+        if (dist < bestDist) { bestDist = dist; best = g; }
+      }
+      if (best) {
+        this.toggleOpening(best);
+        this.flash(best.userData.isOpen ? 'Opened' : 'Closed');
+      }
+    },
+
+    changeOpeningType(type) {
+      const s = this.selected;
+      if (!s || !isOpeningGroup(s)) return;
+      const { edgeIndex, t, lightOn } = s.userData;
+      this.scene.remove(s);
+      this.openings = this.openings.filter((o) => o !== s);
+      const g = createOpening(type, { lightOn });
+      g.userData.edgeIndex = edgeIndex;
+      g.userData.t = t;
+      this.positionOpening(g);
+      this.scene.add(g);
+      this.openings.push(g);
+      this.select(g);
+    },
+
+    // Toggle the emitter on/off — the sun shaft for a window/glazed door, or the
+    // panel light for a wall lamp (also dims the glowing face when off).
+    toggleOpeningLight() {
+      const g = this.selected;
+      if (!g || !isOpeningGroup(g)) return;
+      const u = g.userData;
+      const emitter = u.sun || u.light;
+      if (!emitter) return;
+      u.lightOn = !u.lightOn;
+      emitter.visible = u.lightOn;
+      if (u.panel) u.panel.material.emissiveIntensity = u.lightOn ? Math.min(1.5, 0.2 + u.intensity / 9) : 0.05;
+      this.syncSelection();
+    },
+
+    // Wall-lamp brightness: drives the point light and the glowing face.
+    setOpeningBrightness(v) {
+      const g = this.selected;
+      if (!g || !isOpeningGroup(g)) return;
+      const u = g.userData;
+      if (!u.light) return;
+      u.intensity = v;
+      u.light.intensity = v;
+      if (u.lightOn && u.panel) u.panel.material.emissiveIntensity = Math.min(1.5, 0.2 + v / 9);
+      this.syncSelection();
+    },
+
+    // Wall-lamp light colour (warm white, yellow, …) — tints both the point
+    // light and the glowing face without a rebuild.
+    setOpeningLightColor(hex) {
+      const g = this.selected;
+      if (!g || !isOpeningGroup(g)) return;
+      const u = g.userData;
+      if (!u.light) return;
+      u.lightColor = hex;
+      u.light.color.setHex(hex);
+      if (u.panel) u.panel.material.emissive.setHex(hex);
+      this.syncSelection();
+    },
+  };
+}
