@@ -43,32 +43,42 @@ them, and check everything fits — all in the browser.
 
 ## Running it
 
-No build step — it's a static site using Three.js from a CDN. Use the included
-no-cache dev server so edits to the JS modules show up on a normal refresh:
+There is a build step now: the app is a Vite + Vue 3 + TypeScript project.
 
 ```bash
-python3 serve.py 8000
-# then open http://localhost:8000
+npm install
+npm run dev
+# then open http://localhost:5180
 ```
 
-(Plain `python3 -m http.server` also works, but browsers cache ES modules
-aggressively — after editing a `.js` file you'd need a hard refresh,
-`Cmd/Ctrl + Shift + R`. `serve.py` sends no-cache headers to avoid that.)
+`npm run build` type-checks the project and writes a production bundle to
+`dist/`.
 
 ## Project structure
 
 ```
-index.html        # layout, panels, importmap for Three.js
-styles.css        # dark editor theme
+index.html                # page shell; mounts the Vue app
 src/
-  main.js         # Editor: scene, camera, controls, interaction, persistence
-  icons.js        # Inline SVG line-icon set (no emoji, no deps) + hydrateIcons()
-  room.js         # Room shell — editable polygon, floor, dollhouse walls, edge helpers, containment
-  furniture.js    # Furniture catalog + procedural mesh builders
-  openings.js     # Doors & windows — German DIN 18101 / Brüstungshöhe sizing + mesh builders
+  main.ts                 # creates the Vue app
+  App.vue                 # top bar, floor tabs, catalog, scene, inspector
+  store.ts                # reactive plain-data mirror of the editor state the panels render
+  styles.css              # dark editor theme
+  components/             # the panels: TopBar, FloorBar, CatalogPanel, SceneView, InspectorPanel
+    inspector/            # Room, Furniture, Opening, Wall and Light inspector sections
+  editor/
+    Editor.ts             # the Three.js editor, assembled from the mixins below
+    types.ts              # shared types for scene objects and saved layouts
+    use*.ts               # mixins: scene, selection, canvas interaction, floors, persistence, ...
+    room.ts               # Room shell — editable polygon, floor, dollhouse walls, edge helpers, containment
+    furniture.ts          # Furniture catalog + procedural mesh builders
+    openings.ts           # Doors & windows — German DIN 18101 / Brüstungshöhe sizing + mesh builders
+    walls.ts              # Interior wall builders
+    icons.ts              # Inline SVG line-icon set (no emoji, no deps)
 ```
 
 ## Built with
 
 [Three.js](https://threejs.org/) (WebGL) — `OrbitControls` for camera, raycasting
-for selection and floor-plane dragging.
+for selection and floor-plane dragging. [Vue 3](https://vuejs.org/) for the panels,
+[Vite](https://vite.dev/) for the dev server and build, and
+[TypeScript](https://www.typescriptlang.org/) throughout.
