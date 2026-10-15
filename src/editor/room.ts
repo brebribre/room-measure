@@ -184,6 +184,7 @@ export class Room {
       wall.position.set(mid.x, h / 2, mid.z);
       wall.rotation.y = Math.atan2(-n.x, -n.z); // outward normal
       wall.receiveShadow = true;
+      wall.userData.roomEdge = i; // lets a drag in 3D tell which wall the cursor is on
       this.group.add(wall);
     }
 
