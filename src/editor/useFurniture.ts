@@ -78,10 +78,8 @@ export function useFurniture(): FurnitureMixin & ThisType<Editor> {
     recolor(group, hex) {
       group.userData.color = hex;
       group.traverse((o) => {
-        if (isStandardMesh(o) && !o.userData.isWorktop) {
-          const { l } = o.material.color.getHSL({ h: 0, s: 0, l: 0 });
-          if (l > 0.18) o.material.color.setHex(hex);
-        }
+        // Which parts take the colour was decided when the piece was built.
+        if (isStandardMesh(o) && o.userData.recolorable) o.material.color.setHex(hex);
       });
     },
 

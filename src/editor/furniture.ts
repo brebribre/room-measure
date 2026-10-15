@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { isMesh } from './types';
+import { isMesh, isStandardMesh } from './types';
 import type { FurnitureGroup, StandardMesh } from './types';
 
 // Catalog of furniture. Dimensions in meters: w (width, x), d (depth, z), h (height, y).
@@ -435,5 +435,16 @@ export function createFurniture(type: string, color?: number): FurnitureGroup {
     color: c,
   };
   group.traverse((o) => { if (isMesh(o)) o.userData.isFurniturePart = true; });
+  // Mark the parts a recolour paints: the body (built in the item's colour) and
+  // anything light enough to read as part of it, but not dark accents such as
+  // handles, screens or burners, and not kitchen worktops (they have finishes).
+  // This is decided once, here, because judging by a part's current colour
+  // broke after the first dark recolour: the body then looked like an accent.
+  const base = new THREE.Color(c);
+  group.traverse((o) => {
+    if (!isStandardMesh(o) || o.userData.isWorktop) return;
+    const { l } = o.material.color.getHSL({ h: 0, s: 0, l: 0 });
+    o.userData.recolorable = l > 0.18 || o.material.color.equals(base);
+  });
   return group;
 }
