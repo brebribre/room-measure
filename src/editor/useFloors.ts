@@ -23,7 +23,7 @@ export function useFloors(): FloorsMixin & ThisType<Editor> {
           w: +f.userData.w.toFixed(3), d: +f.userData.d.toFixed(3), h: +f.userData.h.toFixed(3),
         })),
         openings: this.openings.map((o) => ({
-          type: o.userData.type, edgeIndex: o.userData.edgeIndex, wallIndex: o.userData.wallIndex ?? null, t: +o.userData.t.toFixed(4),
+          type: o.userData.type, edgeIndex: o.userData.edgeIndex, wallIndex: o.userData.wallIndex ?? null, side: o.userData.side, t: +o.userData.t.toFixed(4),
           w: +o.userData.w.toFixed(3), h: +o.userData.h.toFixed(3), sill: +o.userData.sill.toFixed(3),
           lightOn: o.userData.lightOn, intensity: o.userData.intensity, lightColor: o.userData.lightColor,
         })),
@@ -72,6 +72,7 @@ export function useFloors(): FloorsMixin & ThisType<Editor> {
         const g = createOpening(op.type, overrides);
         g.userData.edgeIndex = op.edgeIndex;
         g.userData.wallIndex = op.wallIndex ?? null;
+        g.userData.side = op.side === -1 ? -1 : 1;
         g.userData.t = op.t;
         this.positionOpening(g);
         this.scene.add(g);

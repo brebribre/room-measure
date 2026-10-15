@@ -29,8 +29,8 @@ import Icon from './Icon.vue';
         >×</span>
       </button>
     </div>
-    <button class="btn floor-add" title="Add another floor" @click="getEditor().addFloor()">
-      <span class="floor-add-icon"><Icon name="plus" :size="15" /></span>Add floor
+    <button class="btn floor-add" title="Add another room" @click="getEditor().addFloor()">
+      <span class="floor-add-icon"><Icon name="plus" :size="15" /></span>Add room
     </button>
   </div>
 </template>

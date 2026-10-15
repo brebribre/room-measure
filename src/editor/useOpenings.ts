@@ -39,12 +39,13 @@ export function useOpenings(): OpeningsMixin & ThisType<Editor> {
       if (dim === 'sill' && !(isWindow || isCabinet || isScreen || isLamp)) return;
       const overrides: OpeningOverrides = { w: u.w, h: u.h, sill: u.sill, lightOn: u.lightOn, intensity: u.intensity, lightColor: u.lightColor };
       overrides[dim] = value;
-      const { type, edgeIndex, wallIndex, t } = u;
+      const { type, edgeIndex, wallIndex, side, t } = u;
       this.scene.remove(s);
       this.openings = this.openings.filter((o) => o !== s);
       const g = createOpening(type, overrides);
       g.userData.edgeIndex = edgeIndex;
       g.userData.wallIndex = wallIndex;
+      g.userData.side = side;
       g.userData.t = t;
       this.positionOpening(g);
       this.scene.add(g);
@@ -58,23 +59,33 @@ export function useOpenings(): OpeningsMixin & ThisType<Editor> {
     openingWallGeometry(u) {
       if (u.wallIndex != null) {
         const wall = this.walls[u.wallIndex];
-        if (wall) return { a: wall.userData.a, b: wall.userData.b, len: wallLength(wall), normal: wallNormal(wall) };
+        if (wall) {
+          const n = wallNormal(wall);
+          return {
+            a: wall.userData.a, b: wall.userData.b, len: wallLength(wall),
+            normal: { x: n.x * u.side, z: n.z * u.side }, thickness: wall.userData.thickness,
+          };
+        }
         u.wallIndex = null;
       }
       if (u.edgeIndex >= this.room.vertices.length) u.edgeIndex = this.room.longestEdge();
       const i = u.edgeIndex;
-      return { a: this.room.edgeA(i), b: this.room.edgeB(i), len: this.room.edgeLength(i), normal: this.room.edgeInwardNormal(i) };
+      return { a: this.room.edgeA(i), b: this.room.edgeB(i), len: this.room.edgeLength(i), normal: this.room.edgeInwardNormal(i), thickness: 0 };
     },
 
     // Place an opening on its wall (room edge or interior wall), centered at
     // fraction t, facing the wall's normal.
     positionOpening(g) {
       const u = g.userData;
-      const { a, b, len, normal } = this.openingWallGeometry(u);
+      const { a, b, len, normal, thickness } = this.openingWallGeometry(u);
       const half = (u.w / 2) / (len || 1);
       u.t = len > u.w ? Math.max(half, Math.min(1 - half, u.t)) : 0.5;
       const p = { x: a[0] + (b[0] - a[0]) * u.t, z: a[1] + (b[1] - a[1]) * u.t };
-      g.position.set(p.x + normal.x * 0.02, 0, p.z + normal.z * 0.02);
+      // Doors and windows sit in the wall; cabinets, screens and lamps hang on
+      // its face, so on a thick interior wall they move out by half its thickness.
+      const onFace = u.kind === 'cabinet' || u.kind === 'screen' || u.kind === 'lamp';
+      const off = 0.02 + (onFace ? thickness / 2 : 0);
+      g.position.set(p.x + normal.x * off, 0, p.z + normal.z * off);
       g.rotation.y = Math.atan2(normal.x, normal.z);
       this.refreshWallOpenings();
     },
@@ -134,11 +145,13 @@ export function useOpenings(): OpeningsMixin & ThisType<Editor> {
     changeOpeningType(type) {
       const s = this.selected;
       if (!s || !isOpeningGroup(s)) return;
-      const { edgeIndex, t, lightOn } = s.userData;
+      const { edgeIndex, wallIndex, side, t, lightOn } = s.userData;
       this.scene.remove(s);
       this.openings = this.openings.filter((o) => o !== s);
       const g = createOpening(type, { lightOn });
       g.userData.edgeIndex = edgeIndex;
+      g.userData.wallIndex = wallIndex; // stay on the interior wall it was on
+      g.userData.side = side;
       g.userData.t = t;
       this.positionOpening(g);
       this.scene.add(g);

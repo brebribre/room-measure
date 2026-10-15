@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { rebuildWall } from './walls';
+import { rebuildWall, wallNormal } from './walls';
 import { isFurnitureGroup, isLightGroup, isOpeningGroup, isSceneObject, isWallGroup } from './types';
 import type { EdgeHandleMesh, NearestEdge, Vec2, WallHandleMesh } from './types';
 import type { CanvasInteractionMixin, Editor } from './Editor';
@@ -188,14 +188,46 @@ export function useCanvasInteraction(): CanvasInteractionMixin & ThisType<Editor
         return;
       }
       if (this.dragMode === 'opening' && this.selected && isOpeningGroup(this.selected)) {
-        const fp = this.floorPoint();
-        if (!fp) return;
+        let fp = this.floorPoint();
         // Snap the opening to the nearest wall (room edge or interior wall) under
         // the cursor, then slide along it.
-        const best = this.nearestEdge(fp.x, fp.z);
+        let best: NearestEdge | null = null;
+        // In 3D, pointing at a wall means that wall, at that spot. The floor
+        // point can't say so: the ray passes the wall and reaches the floor
+        // beyond it, which lands an opening on the wrong wall (an interior wall's
+        // floor point is often nearer a room wall) or far along the right one.
+        // So check for a direct hit on an interior wall or a visible room wall
+        // first. The near room walls are see-through (back-side only), and the
+        // raycaster skips them the same way.
+        if (this.view !== 'top') {
+          const hit = this.pickFrom([...this.walls, this.room.group])
+            .find((h) => h.object.userData.roomEdge != null || h.object.userData.isWallPart);
+          if (hit && hit.object.userData.roomEdge != null) {
+            const i: number = hit.object.userData.roomEdge;
+            best = { kind: 'room', i, a: this.room.edgeA(i), b: this.room.edgeB(i) };
+            fp = hit.point;
+          } else if (hit) {
+            let o: THREE.Object3D | null = hit.object;
+            while (o && !isWallGroup(o)) o = o.parent;
+            const i = o ? this.walls.indexOf(o) : -1;
+            if (i >= 0) {
+              best = { kind: 'wall', i, a: this.walls[i].userData.a, b: this.walls[i].userData.b };
+              fp = hit.point;
+            }
+          }
+        }
+        if (!fp) return;
+        if (!best) best = this.nearestEdge(fp.x, fp.z);
         const u = this.selected.userData;
-        if (best.kind === 'wall') { u.wallIndex = best.i; u.edgeIndex = 0; }
-        else { u.wallIndex = null; u.edgeIndex = best.i; }
+        if (best.kind === 'wall') {
+          u.wallIndex = best.i; u.edgeIndex = 0;
+          // An interior wall has two faces. In top-down the cursor's side of the
+          // wall picks one; in 3D it is the face the camera looks at (the floor
+          // point under the cursor lands behind the wall there, so it can't decide).
+          const n = wallNormal(this.walls[best.i]);
+          const from = this.view === 'top' ? fp : this.camera.position;
+          u.side = (from.x - best.a[0]) * n.x + (from.z - best.a[1]) * n.z >= 0 ? 1 : -1;
+        } else { u.wallIndex = null; u.edgeIndex = best.i; }
         u.t = projectOntoSegment(best.a, best.b, fp.x, fp.z);
         // Wall-mounted fixtures (windows, cabinets, screens) also slide
         // vertically: map the cursor's height on the wall to the sill so you can

@@ -58,6 +58,8 @@ export const ICON_PATHS: Record<string, string> = {
   eraser: '<path d="M7.5 20.5H20"/><path d="M3.5 16.5 12 8l5 5-7.5 7.5H6z"/><path d="M9 11.5l5 5"/>',
   rotate: '<path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 4.5V9.5H16"/>',
   plus: '<path d="M12 5v14"/><path d="M5 12h14"/>',
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.4-4.4"/>',
+  close: '<path d="M6 6l12 12"/><path d="M18 6 6 18"/>',
   _missing: '<rect x="4" y="4" width="16" height="16" rx="2"/>',
 };
 
