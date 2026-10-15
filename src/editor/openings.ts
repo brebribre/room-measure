@@ -217,7 +217,7 @@ export function createOpening(type: string, overrides: OpeningOverrides = {}): O
   // `wallIndex` starts unset; whoever mounts the opening assigns it right after.
   g.userData = {
     isOpening: true, kind, type, label: spec.label, glazed: !!spec.glazed,
-    w, h, sill, edgeIndex: 0, wallIndex: null, t: 0.5, color: 0,
+    w, h, sill, edgeIndex: 0, wallIndex: null, side: 1, t: 0.5, color: 0,
     leaves, isOpen: false,
     sun, light: lampLight, panel: lampPanel, intensity, lightColor,
     lightOn,

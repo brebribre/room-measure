@@ -61,6 +61,7 @@ export function useSelection(): SelectionMixin & ThisType<Editor> {
         const copy = this.addOpening(s.userData.type, s.userData.edgeIndex,
           { w: s.userData.w, h: s.userData.h, sill: s.userData.sill, lightOn: s.userData.lightOn, intensity: s.userData.intensity, lightColor: s.userData.lightColor });
         copy.userData.wallIndex = s.userData.wallIndex;
+        copy.userData.side = s.userData.side;
         copy.userData.t = Math.min(0.92, s.userData.t + 0.12);
         this.positionOpening(copy);
         this.select(copy);

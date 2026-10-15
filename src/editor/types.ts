@@ -60,6 +60,9 @@ export interface OpeningData {
   sill: number; // mounting height of the bottom edge
   edgeIndex: number; // room edge it sits on (when wallIndex is null)
   wallIndex: number | null; // interior wall it sits on, if any
+  // Which face of an interior wall it mounts on: 1 is the side wallNormal()
+  // points to, -1 the other. Room edges have one usable face and ignore it.
+  side: 1 | -1;
   t: number; // position along the wall, 0..1
   color: number;
   leaves: THREE.Group[]; // hinged pivots that swing open
@@ -169,6 +172,7 @@ export interface WallGeometry {
   b: Vec2;
   len: number;
   normal: XZ;
+  thickness: number; // 0 for a room edge, whose surface is the edge line itself
 }
 
 export interface NearestEdge {
@@ -216,6 +220,7 @@ export interface OpeningItemData {
   type: string;
   edgeIndex: number;
   wallIndex: number | null;
+  side?: 1 | -1; // missing in saves from before openings could use both faces of a wall
   t: number;
   w?: number;
   h?: number;

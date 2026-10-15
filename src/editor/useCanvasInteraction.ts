@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { rebuildWall } from './walls';
+import { rebuildWall, wallNormal } from './walls';
 import { isFurnitureGroup, isLightGroup, isOpeningGroup, isSceneObject, isWallGroup } from './types';
 import type { EdgeHandleMesh, NearestEdge, Vec2, WallHandleMesh } from './types';
 import type { CanvasInteractionMixin, Editor } from './Editor';
@@ -194,8 +194,15 @@ export function useCanvasInteraction(): CanvasInteractionMixin & ThisType<Editor
         // the cursor, then slide along it.
         const best = this.nearestEdge(fp.x, fp.z);
         const u = this.selected.userData;
-        if (best.kind === 'wall') { u.wallIndex = best.i; u.edgeIndex = 0; }
-        else { u.wallIndex = null; u.edgeIndex = best.i; }
+        if (best.kind === 'wall') {
+          u.wallIndex = best.i; u.edgeIndex = 0;
+          // An interior wall has two faces. In top-down the cursor's side of the
+          // wall picks one; in 3D it is the face the camera looks at (the floor
+          // point under the cursor lands behind the wall there, so it can't decide).
+          const n = wallNormal(this.walls[best.i]);
+          const from = this.view === 'top' ? fp : this.camera.position;
+          u.side = (from.x - best.a[0]) * n.x + (from.z - best.a[1]) * n.z >= 0 ? 1 : -1;
+        } else { u.wallIndex = null; u.edgeIndex = best.i; }
         u.t = projectOntoSegment(best.a, best.b, fp.x, fp.z);
         // Wall-mounted fixtures (windows, cabinets, screens) also slide
         // vertically: map the cursor's height on the wall to the sill so you can
